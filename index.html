@@ -166,13 +166,14 @@
 
   <div class="card accent-left" style="margin-bottom:40px;">
     <p>Lagoon is a character-driven AI chat environment built for long-form collaborative fiction. You define a character — personality, voice, backstory — and have an ongoing conversation powered by your choice of model. The system actively works to keep the story coherent over hundreds of turns: tracking what the character knows, surfacing relevant past context automatically, and correcting the prose habits AI models tend to fall into.</p>
-    <p style="margin-top:12px;"><span class="bright">Providers at launch:</span> &nbsp;
+    <p style="margin-top:12px;"><span class="bright">Providers:</span> &nbsp;
       <span class="cyan">Venice.ai</span> &nbsp;·&nbsp;
       <span class="cyan">Together.ai</span> &nbsp;·&nbsp;
       <span class="cyan">HuggingFace</span> &nbsp;·&nbsp;
-      <span class="cyan">Local (Ollama)</span>
+      <span class="cyan">Local (Ollama)</span> &nbsp;·&nbsp;
+      <span class="cyan">Any OpenAI-compatible endpoint</span>
     </p>
-    <p style="margin-top:6px;"><span class="bright">BYOK</span> — paste your API keys in settings. No accounts, no middleman.</p>
+    <p style="margin-top:6px;"><span class="bright">BYOK</span> — paste your API keys in settings. No accounts, no middleman. Point Lagoon at any local inference server (KoboldCpp, llama.cpp, LM Studio, Jan, etc.) via Custom Endpoints.</p>
     <p style="margin-top:6px;"><span class="bright">Stack:</span> Python / Flask backend · Vanilla JS frontend · Local JSON storage · <code>python app.py</code> and you're running.</p>
   </div>
 
@@ -194,7 +195,8 @@
     <a href="#overseer"><span class="num">11</span> Style Overseer</a>
     <div class="toc-group-label">Reference</div>
     <a href="#memory-settings"><span class="num">12</span> Memory &amp; Context Settings</a>
-    <a href="#setup"><span class="num">13</span> Quick setup guide</a>
+    <a href="#providers"><span class="num">13</span> Providers &amp; Custom Endpoints</a>
+    <a href="#setup"><span class="num">14</span> Quick setup guide</a>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════ 01 -->
@@ -763,8 +765,36 @@ She still loves her mum. This is not weakness.</span></div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════ 13 -->
+  <div class="section" id="providers">
+    <h2><span class="tag cyan">13</span> Providers &amp; Custom Endpoints</h2>
+
+    <div class="card accent-left">
+      <p>Lagoon supports four built-in cloud providers and an open-ended custom endpoint system for any OpenAI-compatible local inference server.</p>
+    </div>
+
+    <h3>Built-in providers</h3>
+    <table>
+      <tr><th>Provider</th><th>Notes</th></tr>
+      <tr><td><span class="cyan">Venice.ai</span></td><td>Primary provider. Full feature support including Venice E2EE (ECDH/HKDF/AES-GCM encrypted inference on 10 TEE models), web search, uncensored variants, balance display.</td></tr>
+      <tr><td><span class="cyan">Together.ai</span></td><td>Large model catalog, fast inference. Most models in the default registry are Together-hosted.</td></tr>
+      <tr><td><span class="cyan">HuggingFace</span></td><td>Inference API access to HuggingFace-hosted models.</td></tr>
+      <tr><td><span class="cyan">Ollama</span></td><td>Local model runner. Sync your installed models from the gear menu → Local (Ollama). Any Ollama-served model appears in the dropdown. No API key required.</td></tr>
+    </table>
+
+    <h3>Custom Endpoints</h3>
+    <div class="card green-left">
+      <p>Any server that exposes an OpenAI-compatible <code>/v1/chat/completions</code> endpoint works. Gear menu → Custom Endpoints → Add Endpoint. Provide a display name, base URL, model ID, and optional API key. The endpoint appears in the model dropdown immediately — no restart required.</p>
+      <p style="margin-top:10px;"><span class="bright">Tested with:</span> KoboldCpp · llama.cpp server · LM Studio · Jan · text-generation-webui (OpenAI extension) · Tabby</p>
+      <p style="margin-top:10px;" class="dim">The model ID field is whatever you want sent in the <code>"model"</code> field of the API request. Most local servers ignore it or accept anything — check your tool's docs if you're unsure.</p>
+    </div>
+
+    <h3>Model registry</h3>
+    <p>Built-in models are defined statically in <code>model_configs.json</code>. The registry does not auto-discover models at runtime — this is intentional, keeping the list clean and predictable. Ollama and Custom Endpoints are the dynamic layers for adding models without touching config files.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 14 -->
   <div class="section" id="setup">
-    <h2><span class="tag cyan">13</span> Quick setup for a new character</h2>
+    <h2><span class="tag cyan">14</span> Quick setup for a new character</h2>
 
     <div class="card">
       <h3 style="margin-top:0;">1 — System Prompt + Character Card</h3>
