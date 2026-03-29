@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lagoon v1.3 — System Overview</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #1e1e1e;
+    --bg-darker: #181818;
+    --bg-panel: #252526;
+    --bg-card: rgba(30, 30, 30, 0.85);
+    --text-main: #d4d4d4;
+    --text-dim: #a0a0a0;
+    --text-bright: #ffffff;
+    --accent: #0e639c;
+    --accent-hover: #1177bb;
+    --border: #3872aa;
+    --border-subtle: #2a2a2a;
+    --ansi-red: #f44747;
+    --ansi-green: #6a9955;
+    --ansi-yellow: #d7ba7d;
+    --ansi-blue: #569cd6;
+    --ansi-magenta: #c586c0;
+    --ansi-cyan: #4fc1ff;
+    --ansi-orange: #e6a817;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: var(--bg-darker);
+    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('images/matrix1.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: var(--text-main);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  .page { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .header { border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 40px; }
+  .header-tag { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ansi-cyan); margin-bottom: 8px; }
+  h1 { font-size: 1.9rem; font-weight: 700; color: var(--text-bright); letter-spacing: -0.02em; line-height: 1.2; }
+  h1 span { color: var(--ansi-cyan); }
+  .header-sub { margin-top: 10px; color: var(--text-dim); font-size: 0.9rem; }
+
+  h2 { font-size: 1.1rem; font-weight: 600; color: var(--text-bright); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  h2 .tag { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; background: var(--accent); color: #fff; }
+  h2 .tag.green  { background: #1e4620; color: var(--ansi-green); }
+  h2 .tag.yellow { background: #3d3317; color: var(--ansi-yellow); }
+  h2 .tag.cyan   { background: #0d2a38; color: var(--ansi-cyan); }
+  h2 .tag.purple { background: #2d1f38; color: var(--ansi-magenta); }
+  h2 .tag.orange { background: #3a2800; color: var(--ansi-orange); }
+  h2 .tag.red    { background: #3a1a1a; color: var(--ansi-red); }
+  h2 .tag.blue   { background: #1a2a3a; color: var(--ansi-blue); }
+
+  h3 { font-size: 0.85rem; font-weight: 600; color: var(--ansi-blue); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; margin-top: 22px; }
+
+  .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 20px 22px; margin-bottom: 16px; backdrop-filter: blur(8px); }
+  .card.accent-left  { border-left: 3px solid var(--accent); }
+  .card.green-left   { border-left: 3px solid var(--ansi-green); }
+  .card.yellow-left  { border-left: 3px solid var(--ansi-yellow); }
+  .card.cyan-left    { border-left: 3px solid var(--ansi-cyan); }
+  .card.purple-left  { border-left: 3px solid var(--ansi-magenta); }
+  .card.orange-left  { border-left: 3px solid var(--ansi-orange); }
+  .card.red-left     { border-left: 3px solid var(--ansi-red); }
+  .card.blue-left    { border-left: 3px solid var(--ansi-blue); }
+
+  .section { margin-bottom: 52px; }
+
+  p { color: var(--text-main); font-size: 0.9rem; margin-bottom: 12px; }
+  p:last-child { margin-bottom: 0; }
+
+  .dim     { color: var(--text-dim); }
+  .bright  { color: var(--text-bright); font-weight: 500; }
+  .cyan    { color: var(--ansi-cyan); }
+  .green   { color: var(--ansi-green); }
+  .yellow  { color: var(--ansi-yellow); }
+  .red     { color: var(--ansi-red); }
+  .magenta { color: var(--ansi-magenta); }
+  .orange  { color: var(--ansi-orange); }
+
+  .code-block {
+    background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 4px;
+    padding: 14px 16px; font-family: 'Courier New', Courier, monospace;
+    font-size: 0.8rem; color: var(--ansi-green); margin: 12px 0; white-space: pre-wrap; line-height: 1.5;
+  }
+  .code-block .comment { color: #555; }
+  .code-block .key     { color: var(--ansi-cyan); }
+  .code-block .val     { color: var(--ansi-yellow); }
+
+  .example-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  @media (max-width: 600px) { .example-pair { grid-template-columns: 1fr; } }
+  .ex-bad, .ex-good { border-radius: 4px; padding: 12px 14px; font-size: 0.82rem; line-height: 1.5; }
+  .ex-bad  { background: rgba(244,71,71,0.08);  border: 1px solid rgba(244,71,71,0.25);  color: #cc8888; }
+  .ex-good { background: rgba(106,153,85,0.08); border: 1px solid rgba(106,153,85,0.3);  color: #98c080; }
+  .ex-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; display: block; }
+  .ex-bad .ex-label  { color: var(--ansi-red); }
+  .ex-good .ex-label { color: var(--ansi-green); }
+
+  .stack { display: flex; flex-direction: column; gap: 3px; margin: 12px 0; font-family: 'Courier New', monospace; font-size: 0.8rem; }
+  .stack-row { display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 3px; background: rgba(0,0,0,0.3); border: 1px solid #222; }
+  .stack-row.new       { border-color: #2a4a2a; background: rgba(106,153,85,0.07); }
+  .stack-row.highlight { border-color: #1a3a5c; background: rgba(14,99,156,0.1); }
+  .stack-row.overseer  { border-color: #3a2800; background: rgba(230,168,23,0.06); }
+  .stack-badge { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 6px; border-radius: 2px; flex-shrink: 0; min-width: 58px; text-align: center; }
+  .badge-sys      { background: #1a2a3a; color: var(--ansi-blue); }
+  .badge-user     { background: #2a1a1a; color: #cc8888; }
+  .badge-asst     { background: #1a2a1a; color: var(--ansi-green); }
+  .badge-new      { background: #1e3a1e; color: #8fcc6f; }
+  .badge-overseer { background: #3a2800; color: var(--ansi-orange); }
+  .stack-desc { color: var(--text-dim); }
+  .stack-note { color: var(--ansi-cyan); font-size: 0.72rem; margin-left: auto; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 12px 0; }
+  th { text-align: left; color: var(--text-dim); font-weight: 600; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 6px 10px; border-bottom: 1px solid var(--border-subtle); }
+  td { padding: 8px 10px; border-bottom: 1px solid #222; vertical-align: top; color: var(--text-main); }
+  tr:last-child td { border-bottom: none; }
+  td code { font-family: 'Courier New', monospace; font-size: 0.78rem; color: var(--ansi-cyan); background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 3px; }
+
+  .tip { background: rgba(14,99,156,0.1); border: 1px solid rgba(56,114,170,0.4); border-radius: 4px; padding: 12px 14px; font-size: 0.83rem; color: var(--text-main); margin: 12px 0; }
+  .tip strong { color: var(--ansi-cyan); }
+  .tip.orange { background: rgba(230,168,23,0.07); border-color: rgba(230,168,23,0.3); }
+  .tip.orange strong { color: var(--ansi-orange); }
+  .tip.green { background: rgba(106,153,85,0.07); border-color: rgba(106,153,85,0.3); }
+  .tip.green strong { color: var(--ansi-green); }
+
+  hr { border: none; border-top: 1px solid var(--border-subtle); margin: 40px 0; }
+
+  .toc { background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 16px 20px; margin-bottom: 40px; font-size: 0.83rem; }
+  .toc-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
+  .toc-group-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #666; margin: 12px 0 4px; }
+  .toc a { display: block; color: var(--ansi-blue); text-decoration: none; padding: 3px 0; transition: color 0.15s; }
+  .toc a:hover { color: var(--ansi-cyan); }
+  .toc a .num { color: #666; margin-right: 8px; font-family: monospace; }
+
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  @media (max-width: 600px) { .feature-grid { grid-template-columns: 1fr; } }
+  .feature-tile { background: rgba(0,0,0,0.55); border: 1px solid var(--border-subtle); border-radius: 5px; padding: 12px 14px; font-size: 0.82rem; }
+  .feature-tile .ft-name { font-weight: 600; color: var(--text-bright); margin-bottom: 4px; font-size: 0.84rem; }
+  .feature-tile .ft-desc { color: var(--text-dim); line-height: 1.45; }
+
+  .rule-list { list-style: none; margin: 12px 0; display: flex; flex-direction: column; gap: 6px; }
+  .rule-list li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.87rem; padding: 8px 12px; background: rgba(0,0,0,0.25); border-radius: 4px; border-left: 2px solid #333; }
+  .rule-num { font-family: 'Courier New', monospace; font-size: 0.7rem; font-weight: 700; color: var(--ansi-orange); min-width: 20px; margin-top: 1px; }
+  .rule-body { color: var(--text-main); line-height: 1.5; }
+  .rule-body strong { color: var(--text-bright); }
+  .rule-body em { color: var(--text-dim); font-style: italic; }
+
+  ul.body-list { margin: 10px 0 10px 20px; font-size: 0.88rem; color: var(--text-main); line-height: 2; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-tag">Lagoon v1.3 · Internal Reference</div>
+    <h1><span>//</span> System Overview</h1>
+    <p class="header-sub dim">Complete reference — all features documented from source code</p>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <div class="toc-group-label">System</div>
+    <a href="#overview"><span class="num">01</span> Architecture &amp; feature map</a>
+    <a href="#chat"><span class="num">02</span> Chat &amp; character system</a>
+    <a href="#actions"><span class="num">03</span> Message action buttons</a>
+    <a href="#dual"><span class="num">04</span> Dual Model Mode</a>
+    <a href="#image"><span class="num">05</span> Image generation</a>
+    <a href="#masking"><span class="num">06</span> Masking &amp; reference image workflows</a>
+    <a href="#context"><span class="num">07</span> Context &amp; summary system</a>
+    <div class="toc-group-label">Memory Layers</div>
+    <a href="#assembly"><span class="num">08</span> Prompt assembly order</a>
+    <a href="#authors-note"><span class="num">09</span> Author's Note</a>
+    <a href="#anchors"><span class="num">10</span> Anchors</a>
+    <a href="#awareness"><span class="num">11</span> Character Awareness — reveal tracking</a>
+    <a href="#rag"><span class="num">12</span> RAG Memory</a>
+    <div class="toc-group-label">Quality</div>
+    <a href="#overseer"><span class="num">13</span> Style Overseer</a>
+    <div class="toc-group-label">Reference</div>
+    <a href="#memory-settings"><span class="num">15</span> Memory &amp; Context Settings</a>
+    <a href="#setup"><span class="num">16</span> Quick setup guide</a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 01 -->
+  <div class="section" id="overview">
+    <h2><span class="tag cyan">01</span> Architecture &amp; feature map</h2>
+
+    <div class="card accent-left">
+      <p><span class="bright">Stack:</span> Flask (Python) backend on port 5007 · Vanilla JS frontend · Local JSON file storage · No database, no cloud sync, no accounts.</p>
+      <p><span class="bright">State:</span> Two parallel systems — <code>Store.js</code> (legacy event bus) and <code>state.js</code> (direct mutable object, primary). All active features read/write <code>state.js</code>.</p>
+      <p><span class="bright">Persistence:</span> Chats → <code>chats/{chat_id}.json</code> · Character configs → <code>configs/{name}.json</code> · Summary stacks → <code>.summaries/{chat_id}.summary.json</code> · Images/avatars → <code>images/</code>, <code>avatars/</code>, <code>model_avatars/</code> · UI preferences → <code>localStorage</code>.</p>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-tile">
+        <div class="ft-name">Chat</div>
+        <div class="ft-desc">SSE-streamed responses from any configured model. Per-character configs, message editing, forking, regeneration, nudge injection, message keeping for export.</div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Dual Model Mode</div>
+        <div class="ft-desc">Two AI characters conducting an automated conversation with each other. Configurable turn limit, pause/resume, per-character temperature and model override.</div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Image Generation</div>
+        <div class="ft-desc">Venice (Qwen, Seedream V4, upscale, video), Google Gemini, HuggingFace. Generate, edit, multi-edit, and masking workflows. Multi-variant parallel generation.</div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Context Management</div>
+        <div class="ft-desc">Token counting via tiktoken. Auto-summarisation at configurable threshold (default 75%) with user approval workflow. Rolling summary stack with continuation-aware prompts. All parameters tunable via Memory Settings.</div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Author's Note</div>
+        <div class="ft-desc">Re-injection of tone/voice/scene facts at a configurable depth from the bottom of context on every turn. Persistent (config file) or session-only override.</div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Anchors</div>
+        <div class="ft-desc">Keyword-triggered lore entries with priority and token budget. Built-in character awareness tracking with automated reveal detection and toast notification.</div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">RAG Memory</div>
+        <div class="ft-desc">Semantic retrieval of past conversation chunks using all-MiniLM-L6-v2 (384-dim). Top-k matches by cosine similarity injected silently before each turn. Can be disabled; all parameters configurable via Memory Settings.</div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Style Overseer</div>
+        <div class="ft-desc">Post-stream LLM agent (grok-4-20-beta) reviewing each response for 6 prose violation types. Accept replaces the offending text in-place with a corrected version. Corrected passages are marked with an amber dotted underline. Auto-accept mode runs silently after every response.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 02 -->
+  <div class="section" id="chat">
+    <h2><span class="tag cyan">02</span> Chat &amp; character system</h2>
+
+    <div class="card cyan-left">
+      <p>Each conversation is tied to a <span class="bright">character config</span> — a JSON file in <code>configs/</code> that defines everything about how that model should behave. Configs are reusable across chats.</p>
+    </div>
+
+    <h3>Complete character config fields</h3>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>What it does</th></tr>
+      <tr><td><code>character_name</code></td><td>string</td><td>Display name shown in the chat header and message sender labels.</td></tr>
+      <tr><td><code>model</code></td><td>string</td><td>Model ID to use (e.g. <code>deepseek-r1</code>, <code>grok-4-20-beta</code>). Must match backend model registry.</td></tr>
+      <tr><td><code>system_prompt</code></td><td>string</td><td>Core instruction layer. Who the character is, what they never do. Injected as the first system message — permanent, never pruned from context.</td></tr>
+      <tr><td><code>system_context</code></td><td>string</td><td>Additional world/scene context. Injected as second system message alongside the character card. Also permanent.</td></tr>
+      <tr><td><code>character_card</code></td><td>string</td><td>Character description. Used by the avatar generator (first 500 chars become the image prompt). Included in system_context injection.</td></tr>
+      <tr><td><code>intro_statement</code></td><td>string</td><td>First assistant message. Appears at the top of the chat to set the scene — establishes voice before the user has said anything.</td></tr>
+      <tr><td><code>author_note</code></td><td>string</td><td>Sticky re-injection near generation point. See section 09.</td></tr>
+      <tr><td><code>author_note_depth</code></td><td>int</td><td>How many messages from the bottom the author's note is inserted before. Default: 4.</td></tr>
+      <tr><td><code>temperature</code></td><td>float 0–2</td><td>Sampling temperature. Fiction typically 0.8–1.1.</td></tr>
+      <tr><td><code>top_p</code></td><td>float 0–1</td><td>Nucleus sampling threshold.</td></tr>
+      <tr><td><code>repetition_penalty</code></td><td>float 1.0+</td><td>Penalises repeated tokens. Stored in <code>localStorage:lagoon_desktop_settings</code> and applied per-request.</td></tr>
+      <tr><td><code>max_tokens</code></td><td>int</td><td>Maximum response length per turn.</td></tr>
+      <tr><td><code>enable_web_search</code></td><td>bool</td><td>Attaches web search results to the request. Results render as a collapsible citation block under the message.</td></tr>
+      <tr><td><code>include_venice_system_prompt</code></td><td>bool</td><td>Prepends Venice's built-in system instruction. Default true. Disable for full custom control.</td></tr>
+      <tr><td><code>uncensored_mode</code></td><td>bool</td><td>Routes to Venice uncensored variants. Explicitly requests uncensored output.</td></tr>
+      <tr><td><code>turbo_mode</code></td><td>bool</td><td>Uses Venice's fast backend system prompt. Overrides and ignores the custom system_prompt field.</td></tr>
+      <tr><td><code>strip_thinking</code></td><td>bool</td><td>Hides <code>&lt;think&gt;…&lt;/think&gt;</code> CoT blocks from display. The model still thinks — CoT is stripped from the rendered bubble but remains in the saved message.</td></tr>
+      <tr><td><code>style_overseer</code></td><td>bool</td><td>Enables the post-stream prose review agent for this character. See section 13.</td></tr>
+      <tr><td><code>avatar_url</code></td><td>string</td><td>Data URI or path to the character's avatar image.</td></tr>
+    </table>
+
+    <h3>Streaming flow</h3>
+    <p>User sends message → <code>POST /api/chat</code> with SSE response. The backend emits three event types: <code>start</code> (returns the chat ID, fires once), <code>chunk</code> (a text fragment, fires continuously), <code>end</code> (stream finished). On first chunk the loading spinner is replaced with the rendered message. Markdown is rendered incrementally as chunks arrive.</p>
+
+    <p>After the stream ends: chat is auto-saved to disk, RAG indexing runs in the background, Style Overseer fires if enabled.</p>
+
+    <h3>Markdown rendering</h3>
+    <p>Uses <code>markdown-it</code> with linkify enabled. Before rendering, the pipeline strips: OOC nudge text <code>(( … ))</code>, citation markers (<code>word.13</code>, <code>[1]</code>, <code>[^1]</code>, superscript numbers). <code>&lt;think&gt;…&lt;/think&gt;</code> blocks are converted to a collapsible <code>&lt;details&gt;</code> element with a "Thinking…" summary. Fallback: HTML-escaped plain text if markdown-it is unavailable.</p>
+
+    <h3>Prompt history (input field)</h3>
+    <p>Last 10 submitted prompts stored in <code>localStorage</code>. Navigate with <kbd>↑</kbd> / <kbd>↓</kbd> arrow keys in the input field while it is empty. The current draft is preserved when you start browsing. Deduplicates consecutive identical entries. Index resets to −1 on submit.</p>
+
+    <h3>Edit message</h3>
+    <p>User messages: clicking Edit loads the text back into the input field (highlighted to show edit mode) and sets <code>state.editingMessageIndex</code>. Submitting replaces that message in history instead of appending a new one.</p>
+    <p>Assistant messages: opens the bubble for inline editing directly. The edited text is saved to <code>state.messages</code> and persisted to disk.</p>
+
+    <h3>Session Author's Note override</h3>
+    <p>In the Tools tab (right sidebar), the Author's Note field operates as a <span class="bright">session-only override</span>. It is stored in <code>state.sessionAuthorNote</code> and <code>state.sessionAuthorNoteDepth</code> — never written back to the character config file. Closing the chat discards it. To make changes permanent, edit the character config directly.</p>
+
+    <h3>Avatar generation</h3>
+    <p>Edit character config → Generate Avatar button. Takes the first 500 characters of <code>character_card</code> as the image description, prepends a strict photorealistic portrait prompt, calls Venice image generation with the safety checker disabled. Shows a preview — user keeps or regenerates. Stored as a base64 data URI in <code>avatar_url</code>.</p>
+
+    <h3>Prompt Monitor</h3>
+    <p>Right sidebar → Prompt Monitor tab. Calls <code>POST /api/preview_prompt</code> and shows the fully assembled payload that will be sent to the model on the next turn — all system messages, summary stack, RAG chunks, anchors injections, author's note at its injected position, full conversation history. Includes a token count and context usage gauge. Has a <span class="bright">Summarize Now</span> button for manual summarisation triggers.</p>
+
+    <h3>Context gauge</h3>
+    <p>A pie-chart indicator in the interface shows current token usage vs. the model's context window. Token counting uses tiktoken <code>cl100k_base</code> encoding with 4-token overhead per message. Falls back to <code>length / 4</code> if tiktoken is unavailable.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 03 -->
+  <div class="section" id="actions">
+    <h2><span class="tag cyan">03</span> Message action buttons</h2>
+
+    <div class="card cyan-left">
+      <p>Action bars appear on message hover. The assistant bar is the primary workspace — it exposes regeneration, writing tools, image generation, TTS, forking, and the style overseer. Dual Model mode disables several of these.</p>
+    </div>
+
+    <h3>Assistant message actions</h3>
+    <table>
+      <tr><th>Button</th><th>Behavior</th><th>Dual mode</th></tr>
+      <tr><td>Copy</td><td>Copies message text to clipboard. Strips <code>&lt;think&gt;…&lt;/think&gt;</code> CoT blocks before copying — you get only the visible response.</td><td>✓</td></tr>
+      <tr><td>Edit</td><td>Opens the response for inline editing. Edited text replaces the stored message and is saved to chat history and disk.</td><td>✗</td></tr>
+      <tr><td>Fork</td><td>Creates a new parallel chat that branches from this exact point. The new chat contains the full message history up to and including this message. The original chat is unmodified.</td><td>✓</td></tr>
+      <tr><td>Nudge &amp; Regen</td><td>Opens a modal. You type an out-of-character direction — it is injected as <code>(( your text ))</code> before the regeneration request. The nudge text is stripped from display before the response renders and never appears in the visible chat history.</td><td>✗</td></tr>
+      <tr><td>Regenerate</td><td>Resends the same context with no additional direction. Removes the existing response and streams a new one.</td><td>✓</td></tr>
+      <tr><td>Delete pair</td><td>Removes this user message and its paired assistant response from history. The conversation rolls back to the previous exchange.</td><td>✓</td></tr>
+      <tr><td>Read Aloud</td><td>TTS playback via the built-in AudioService. Button shows a loading state while audio is fetched, then a playing state. Clicking again while playing stops playback immediately.</td><td>✗</td></tr>
+      <tr><td>Generate Image</td><td>Uses the full message text as an image generation prompt. Dispatches a <code>generateImageFromResponse</code> event to <code>ImageGenerationManager</code>, which fires immediately using the currently selected image model and parameters. Click again while loading to cancel.</td><td>✗</td></tr>
+      <tr><td>Writing Tools (≡)</td><td>Opens a context menu of rewrite tools. Selecting one regenerates the response using that tool's directive prompt. Positioning is smart: opens upward if there's not enough space below, shifts left if near the edge.</td><td>✗</td></tr>
+      <tr><td>Keep (✓)</td><td>Marks the message for selective export. Stored in <code>state.keptMessages</code> (a Set of message indices) and saved to the chat JSON. Kept messages are highlighted. Export downloads only kept messages.</td><td>✗</td></tr>
+      <tr><td>⚑ auto</td><td>Style Overseer auto-accept toggle. Only rendered when <code>style_overseer</code> is enabled on the character config. State persisted in <code>localStorage</code>. See section 13.</td><td>N/A</td></tr>
+    </table>
+
+    <h3>User message actions</h3>
+    <table>
+      <tr><th>Button</th><th>Behavior</th></tr>
+      <tr><td>Copy</td><td>Copies the user message to clipboard (CoT stripped).</td></tr>
+      <tr><td>Edit</td><td>Loads text into the input field with an editing highlight. On submit, replaces the stored message rather than appending.</td></tr>
+      <tr><td>Delete</td><td>Removes only this user message from history. The paired assistant response is left in place.</td></tr>
+    </table>
+
+    <h3>Writing Tools — defaults and customisation</h3>
+    <p>The four default tools (stored in <code>messages.js:DEFAULT_WRITING_TOOLS</code>):</p>
+    <table>
+      <tr><th>Label</th><th>What the directive prompt instructs the model to do</th></tr>
+      <tr><td>Less Tell / More Show</td><td>Remove all emotion-labeling adjectives. Remove narrator explanations of what something "meant." Describe only physical actions, sounds, and sensations. Never explain — trust the reader to infer.</td></tr>
+      <tr><td>More Sensory Detail</td><td>Focus on sensory detail (sight, sound, smell, touch) to make the scene more immersive.</td></tr>
+      <tr><td>Less Sensory Detail</td><td>Trim redundant sensory stacking. Keep one strong detail per beat instead of three. Preserve emotional core and dialogue. Target ~70–80% of original length.</td></tr>
+      <tr><td>Add Inner Monologue</td><td>Add a short inner monologue in italics for the viewpoint character.</td></tr>
+    </table>
+    <p>All labels and prompts are fully editable in Settings → Writing Tools. Customised tools are stored in <code>localStorage:writing_tools_v2</code> as a JSON array of <code>{id, label, prompt}</code> objects. The defaults are used if the key is absent or the stored data is malformed.</p>
+
+    <div class="tip"><strong>Nudge vs Writing Tools:</strong> Writing Tools request a stylistic transformation of the existing output. Nudge injects a contextual author note that shapes <em>how the model regenerates</em> — more powerful for correcting character voice or narrative direction because it reads as author intent, not a rewrite command.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 04 -->
+  <div class="section" id="dual">
+    <h2><span class="tag blue">04</span> Dual Model Mode</h2>
+
+    <div class="card blue-left">
+      <p>Two AI characters conducting an automated conversation with each other. Model A responds to the user's opening prompt. Model B then receives Model A's response as a "user" message. They alternate until the turn limit is reached or you stop them.</p>
+    </div>
+
+    <h3>Setup modal</h3>
+    <table>
+      <tr><th>Field</th><th>Details</th></tr>
+      <tr><td>Character A / Character B</td><td>Dropdown of all saved character configs. Each brings its own system prompt, character card, temperature, and model.</td></tr>
+      <tr><td>Temperature sliders</td><td>Independent per character. Override the config's saved temperature for this session.</td></tr>
+      <tr><td>Model override</td><td>Optional. Use a different model than what the character config specifies — useful for testing the same character with different models side by side.</td></tr>
+      <tr><td>Max turns</td><td>How many alternations before the automation stops. Default: 10.</td></tr>
+      <tr><td>Initial prompt</td><td>The opening user message that Model A responds to first.</td></tr>
+      <tr><td>Venice system prompt toggle</td><td><code>include_venice_system_prompt</code> — whether Venice's built-in system instruction is prepended. Default: true.</td></tr>
+    </table>
+
+    <h3>Execution</h3>
+    <p>A <span class="bright">1500ms delay</span> is enforced between turns (hardcoded). During each turn the active model streams its response normally via SSE. The streaming message appears with a model badge (character name) identifying who is speaking.</p>
+
+    <p><span class="bright">Message assembly per model:</span> Model A receives the full conversation history with its own system prompt. Model B receives its own system prompt, and Model A's last response is presented as a <code>user</code> role message. Consecutive same-role messages are collapsed to avoid API rejections.</p>
+
+    <h3>Control bar</h3>
+    <table>
+      <tr><th>Element</th><th>Details</th></tr>
+      <tr><td>Character names</td><td>Shows both character names with a divider — e.g. "Kelly ↔ Amy"</td></tr>
+      <tr><td>Turn counter</td><td>"Turn 3 / 10" — updates after each completed exchange.</td></tr>
+      <tr><td>Status badge</td><td>Running / Paused / Stopped / Inactive</td></tr>
+      <tr><td>Pause / Resume</td><td>Pause waits for the current turn to finish before halting. Resume continues from where it left off.</td></tr>
+      <tr><td>Stop</td><td>Cancels the current stream via AbortController and ends automation.</td></tr>
+      <tr><td>Continue</td><td>Opens a modal to specify additional turns. Extends <code>maxTurns</code> and resumes.</td></tr>
+    </table>
+
+    <h3>Manual intervention</h3>
+    <p>Clicking Regenerate or Delete on any message in a dual conversation <span class="bright">pauses the automation automatically</span>. This lets you correct a bad response without the system continuing on top of it. Resume from the control bar when you're satisfied.</p>
+
+    <h3>State persistence</h3>
+    <p>Dual model chats are saved with <code>config.model === 'dual-model'</code> as a marker. On load, the system auto-detects this, restores the control bar, turn count, and message attribution (model badges). Message actions available in dual mode: Copy, Fork, Regenerate, Delete pair. Edit, Keep, Read Aloud, Generate Image, and Writing Tools are not available.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 05 -->
+  <div class="section" id="image">
+    <h2><span class="tag purple">05</span> Image generation</h2>
+
+    <div class="card purple-left">
+      <p>Three providers, multiple models, three operation modes (generate, edit, multi-edit). The system auto-routes based on what reference images are loaded. Parameters are persisted per-model in <code>localStorage:image_generation_params</code>.</p>
+    </div>
+
+    <h3>Models &amp; providers</h3>
+    <table>
+      <tr><th>Provider</th><th>Models</th><th>Categories</th></tr>
+      <tr><td>Venice</td><td>Qwen Image, Seedream V4 (+ their edit variants), Upscale model</td><td>generate, edit, upscale</td></tr>
+      <tr><td>Google</td><td>Gemini 3 Pro Image Preview</td><td>generate</td></tr>
+      <tr><td>HuggingFace</td><td>Various (LoRA-capable models, image-to-video)</td><td>generate, image-to-video</td></tr>
+    </table>
+    <p>The model dropdown only shows models with <code>category: "generate"</code> or <code>supports_reference_images: true</code>, plus special categories (background-remove, upscale). Edit variants (e.g. <code>seedream-v4-edit</code>) are hidden — they exist only for internal routing.</p>
+
+    <h3>Generate / Edit / Multi-edit routing</h3>
+    <table>
+      <tr><th>State</th><th>Model used</th><th>Endpoint</th></tr>
+      <tr><td>No reference images loaded</td><td>Selected generate model (e.g. <code>seedream-v4</code>)</td><td><code>POST /image/generate</code></td></tr>
+      <tr><td>Target image loaded &amp; checkbox checked</td><td>Auto-switches to <code>edit_variant</code> (e.g. <code>seedream-v4-edit</code>)</td><td><code>POST /image/edit</code></td></tr>
+      <tr><td>Target + one or more source images loaded &amp; checked</td><td>Edit variant</td><td><code>POST /image/multi-edit</code></td></tr>
+      <tr><td>Reference image present but checkbox unchecked</td><td>Generate model (checkbox controls participation)</td><td><code>POST /image/generate</code></td></tr>
+    </table>
+
+    <h3>Sidebar controls</h3>
+    <p><code>isInEditMode()</code> checks whether any reference images are loaded <em>and</em> their checkboxes are checked. When in edit mode, the sidebar switches to the edit variant's <code>ui_controls</code> (which are empty for Venice edit models — Venice auto-matches the target image's dimensions, so no size controls are shown or sent).</p>
+    <table>
+      <tr><th>Control</th><th>Models</th><th>Notes</th></tr>
+      <tr><td>Dimensions</td><td>Qwen Image</td><td>Enum presets (1K 16:9, SDXL, HD, 4K, etc.)</td></tr>
+      <tr><td>Aspect Ratio</td><td>Seedream V4, Gemini 3 Pro</td><td>Enum from model params</td></tr>
+      <tr><td>Resolution</td><td>Gemini 3 Pro</td><td>1K / 2K / 4K — maps to <code>imageSize</code> in API</td></tr>
+      <tr><td>Steps</td><td>Seedream V4</td><td>Slider with model-defined min/max</td></tr>
+      <tr><td>CFG Scale</td><td>Select models</td><td>Guidance strength slider</td></tr>
+      <tr><td>Seed</td><td>Qwen Image, Seedream V4</td><td>Number input + "Auto" toggle. Auto randomises on each generation.</td></tr>
+      <tr><td>Format</td><td>Select models</td><td>PNG / WebP / JPEG</td></tr>
+      <tr><td>Negative Prompt</td><td>Select models</td><td>Text field</td></tr>
+      <tr><td>Safety</td><td>Select Venice models</td><td>On/Off button pair — sets <code>disable_safety_checker</code></td></tr>
+      <tr><td>Results / Variants</td><td>All models</td><td>1–8 parallel generations. Always visible (force-shown in code regardless of model config).</td></tr>
+    </table>
+
+    <h3>Multi-variant parallel generation</h3>
+    <p>When <code>num_variants &gt; 1</code>, the backend uses a <code>ThreadPoolExecutor</code> to fire all API calls concurrently. Each call gets a distinct seed (base seed + offset, or fully random). Results are merged and all images returned together. The frontend displays them in a gallery carousel — always shown for all modes including edit.</p>
+
+    <h3>Prompt history (image panel)</h3>
+    <p>Same mechanism as chat: last 10 prompts in <code>localStorage</code>, navigated with <kbd>↑</kbd> / <kbd>↓</kbd> arrow keys. Deduplicates consecutive identical entries.</p>
+
+    <h3>Image file input</h3>
+    <p>The context file input accepts images, PDFs, code files, and text files. Images are read as base64 data URIs. PDFs are sent to <code>POST /api/parse_file</code> for text extraction. Code files are wrapped in a markdown code block with language annotation.</p>
+
+    <h3>HuggingFace-specific</h3>
+    <p>Text-to-image via <code>InferenceClient</code>. Image-to-video via <code>InferenceClient</code> with FAL-AI provider (10-minute timeout). Supports prompt prefix for LoRA trigger words. Sends <code>disable_safety_checker: true</code> as an extra body parameter.</p>
+
+    <h3>Venice-specific details</h3>
+    <table>
+      <tr><th>Operation</th><th>Endpoint</th><th>Key field names</th></tr>
+      <tr><td>Generate</td><td><code>POST /image/generate</code></td><td><code>model</code>, dimensions/aspect_ratio/seed/steps/cfg/negative</td></tr>
+      <tr><td>Edit (single)</td><td><code>POST /image/edit</code></td><td><code>modelId</code> (not <code>model</code>), image as base64</td></tr>
+      <tr><td>Multi-edit</td><td><code>POST /image/multi-edit</code></td><td><code>modelId</code>, <code>images</code> array (2–3 images)</td></tr>
+      <tr><td>Upscale</td><td><code>POST /image/upscale</code></td><td>scale, enhance, enhanceCreativity, replication</td></tr>
+      <tr><td>Video</td><td><code>POST /video/queue</code> → poll <code>/video/retrieve</code></td><td>duration, resolution — polls up to 120s</td></tr>
+    </table>
+
+    <h3>Google Gemini details</h3>
+    <p>Endpoint: <code>https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent</code>. Auth via <code>x-goog-api-key</code> header (no Bearer prefix). Images <em>must</em> come before text in the <code>contents[].parts[]</code> array — ordering enforced in backend. Response: <code>candidates[].content.parts[].inline_data.data</code> (base64). Edit mode auto-matches input image dimensions — no size params sent.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 06 -->
+  <div class="section" id="masking">
+    <h2><span class="tag red">06</span> Masking &amp; reference image workflows</h2>
+
+    <div class="card red-left">
+      <p>Lagoon has a layered masking system for controlling exactly what parts of an image are preserved or replaced. There are three types of mask state: the censor mask (hides sensitive areas), the clothed image (AI-generated clothed substitute), and the AI inpainting mask (directs the edit model to a specific region).</p>
+    </div>
+
+    <h3>Reference image roles</h3>
+    <table>
+      <tr><th>Slot</th><th>State key</th><th>Purpose</th></tr>
+      <tr><td>Target image</td><td><code>state.referenceImage</code></td><td>The base image being edited. When loaded with checkbox checked → triggers edit mode routing.</td></tr>
+      <tr><td>Source image 1–3</td><td><code>state.sourceImage</code>, <code>sourceImage2</code>, <code>sourceImage3</code></td><td>Additional reference images for face swap / multi-edit workflows. Sent in the <code>images</code> array of the multi-edit payload.</td></tr>
+    </table>
+
+    <h3>Censor mask system</h3>
+    <p>Users draw a B&amp;W mask over the target or source image to hide sensitive regions. When present, the masked version (not the original) is sent in the API payload. The original is never transmitted once a censor mask is active.</p>
+    <table>
+      <tr><th>State key</th><th>Used for</th></tr>
+      <tr><td><code>state.censorMask</code></td><td>Mask for the target image</td></tr>
+      <tr><td><code>state.targetClothedImage</code></td><td>AI-generated clothed substitute for the target (replaces target in payload)</td></tr>
+      <tr><td><code>state.sourceCensorMask</code></td><td>Mask for source image 1</td></tr>
+      <tr><td><code>state.sourceClothedImage</code></td><td>Clothed substitute for source image 1</td></tr>
+    </table>
+
+    <h3>Masking endpoints</h3>
+    <table>
+      <tr><th>Endpoint</th><th>Input</th><th>What it does</th></tr>
+      <tr><td><code>POST /api/ai_mask</code></td><td>imageB64, prompt, optional mask, optional rawPrompt, model</td><td>AI inpainting — edits only the masked region using the selected model. <code>rawPrompt</code> flag skips template wrapping.</td></tr>
+      <tr><td><code>POST /api/body_mask</code></td><td>imageB64</td><td>Auto-generates a body region mask from the image without user drawing.</td></tr>
+      <tr><td><code>POST /api/isolate_face</code></td><td>imageB64</td><td>Extracts the face region from a full image. Used to prepare source images for face swap.</td></tr>
+      <tr><td><code>POST /api/preview_censor</code></td><td>sourceImage, censorMask</td><td>Returns a preview of the censored result without generating a new image.</td></tr>
+    </table>
+
+    <p>Models supporting AI mask: filtered by <code>supports_ai_mask: true</code> in model configs. This list is returned by <code>GET /api/models/ai-mask</code> and populates the model dropdown in the masking modal.</p>
+
+    <div class="tip"><strong>Clothed image workflow:</strong> The full flow is — draw censor mask → call body_mask or ai_mask to generate a clothed version → the clothed version replaces the original in all subsequent API payloads, preserving privacy while still allowing further edits.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 07 -->
+  <div class="section" id="context">
+    <h2><span class="tag yellow">07</span> Context &amp; summary system</h2>
+
+    <div class="card yellow-left">
+      <p>As a conversation grows, older messages have diminishing influence on generation. Lagoon's context system manages token load actively — counting, summarising, stacking, and injecting summaries so the model always has coherent historical awareness regardless of conversation length.</p>
+    </div>
+
+    <h3>Token counting</h3>
+    <p>Backend uses <code>tiktoken cl100k_base</code> encoding with 4-token overhead per message. Fallback: <code>len(text) / 4</code>. Context window sizes are configured per model in a <code>CONTEXT_WINDOWS</code> dict (default: 200,000 tokens). Auto-summarisation threshold: <span class="bright">configurable (default 75%)</span> — adjust via Memory Settings → Context Summarization.</p>
+
+    <h3>Auto-summarisation trigger</h3>
+    <p>On each chat request, <code>manage_context()</code> assembles the full LLM payload (config system messages + summary stack + recent conversation) and counts tokens. If the assembled payload exceeds the configured threshold (default 75%) of the context window <em>and</em> no summary is already pending review, a background summarisation job fires. It does not block the current request.</p>
+
+    <h3>Pending review workflow</h3>
+    <p>The generated summary is marked <code>pending_review: true</code> in the stack. A notification banner appears in the UI. <span class="bright">No messages are pruned from disk until the user approves.</span> On approval, the raw messages covered by the summary are deleted from the chat JSON, keeping only the configured number of recent message pairs (default: 5, adjust via Memory Settings → <em>Messages to keep after prune</em>). On rejection, the pending entry is deleted from the stack with no changes to history.</p>
+
+    <h3>Summary stack structure</h3>
+    <div class="code-block"><span class="comment"># .summaries/{chat_id}.summary.json</span>
+<span class="key">[</span>
+  <span class="val">{
+    "id": "uuid",
+    "text": "narrative summary in flowing prose...",
+    "message_count": 42,
+    "model": "grok-4-20-beta",
+    "created_at": "2026-03-25T14:30:00",
+    "pending_review": true,    // present only while awaiting approval
+    "msgs_to_keep": 10         // how many recent messages to preserve on approval
+  }
+</span><span class="key">]</span></div>
+
+    <h3>Summary injection format</h3>
+    <p>Approved summaries are injected as system messages in the LLM payload. Single summary: wrapped as <code>[PRIOR EVENTS]…[END PRIOR EVENTS — story continues…]</code>. Multiple summaries: each gets a chain marker — <code>[PRIOR EVENTS — Part 1 of N]…[END PART 1 — continued in Part 2]</code>.</p>
+
+    <h3>Continuation-aware summarisation prompts</h3>
+    <p>The summarisation prompt branches based on the stack state:</p>
+    <ul class="body-list">
+      <li><span class="bright">Empty stack (first summary):</span> Full initial prompt — character state, setting, every event, dialogue beats, emotional shifts, sexual content if present, where the scene ended, loose threads. Target: thorough prose, past tense, third person, specific names not pronouns.</li>
+      <li><span class="bright">Approved summaries exist (continuation):</span> The existing summaries are shown to the model explicitly. The directive is: do not repeat, rephrase, or summarise anything already recorded — cover only the new events from where the prior record ends. Prevents rehash and duplication between stack entries.</li>
+    </ul>
+
+    <h3>Summarisation model</h3>
+    <p>Default: <code>grok-4-20-beta</code>. Max tokens: 10,000. Non-streaming synchronous call. Both are configurable via Memory Settings → <em>Summarization model</em> / <em>Summary max tokens</em>.</p>
+
+    <h3>Force Summarize</h3>
+    <p>Prompt Monitor → Summarize Now. Triggers <code>POST /api/force_summarize</code> which calls <code>_generate_summary()</code> directly with the same continuation-aware prompt. Adds the result to the stack as a pending review entry — same approval workflow as auto-generated summaries.</p>
+
+    <h3>Context management APIs</h3>
+    <table>
+      <tr><th>Endpoint</th><th>Purpose</th></tr>
+      <tr><td><code>POST /api/context_status</code></td><td>Returns current token count and percentage of context window used.</td></tr>
+      <tr><td><code>POST /api/preview_prompt</code></td><td>Returns the fully assembled LLM payload without sending it — used by Prompt Monitor.</td></tr>
+      <tr><td><code>POST /api/generate_detailed_summary</code></td><td>Manual trigger for summary generation (review workflow).</td></tr>
+      <tr><td><code>POST /api/approve_summary</code></td><td>Approves a pending summary — prunes covered messages from disk.</td></tr>
+      <tr><td><code>POST /api/delete_summary</code></td><td>Deletes a summary entry from the stack without affecting messages.</td></tr>
+      <tr><td><code>POST /api/apply_summary</code></td><td>Applies a summary with a specific message drop count.</td></tr>
+    </table>
+
+    <div class="tip"><strong>Hard limit:</strong> If context somehow reaches 95% of the window (e.g. a very long single message), <code>manage_context()</code> enforces a hard prune to bring it back under the limit — regardless of whether a summary is pending.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 08 -->
+  <div class="section" id="assembly">
+    <h2><span class="tag cyan">08</span> Prompt assembly order</h2>
+
+    <p class="dim">Every request assembles fresh. This is the order the model reads it — top to bottom, bottom has most influence on generation.</p>
+
+    <div class="stack">
+      <div class="stack-row highlight">
+        <span class="stack-badge badge-sys">SYSTEM</span>
+        <span class="stack-desc">system_prompt</span>
+        <span class="stack-note">permanent · from chat file</span>
+      </div>
+      <div class="stack-row highlight">
+        <span class="stack-badge badge-sys">SYSTEM</span>
+        <span class="stack-desc">system_context + character_card</span>
+        <span class="stack-note">permanent · from chat file</span>
+      </div>
+      <div class="stack-row">
+        <span class="stack-badge badge-sys">SYSTEM</span>
+        <span class="stack-desc">Summary stack — Part 1 of N … Part N of N (approved only)</span>
+        <span class="stack-note">injected at request time</span>
+      </div>
+      <div class="stack-row new">
+        <span class="stack-badge badge-new">RAG</span>
+        <span class="stack-desc green">Top-k semantically retrieved past chunks (defaults: top 3, ≥0.35 similarity, 800-token budget) — all configurable</span>
+        <span class="stack-note">injected at request time</span>
+      </div>
+      <div class="stack-row new">
+        <span class="stack-badge badge-new">LORE</span>
+        <span class="stack-desc green">Anchors entries triggered by keywords in last N messages (default: 15, priority-ordered, 4000-token budget) — all configurable</span>
+        <span class="stack-note">injected at request time</span>
+      </div>
+      <div class="stack-row new">
+        <span class="stack-badge badge-new">NOTE</span>
+        <span class="stack-desc green">Author's Note — inserted at depth N from the bottom of the conversation window</span>
+        <span class="stack-note">injected at request time</span>
+      </div>
+      <div class="stack-row overseer">
+        <span class="stack-badge badge-overseer">OVERSEER</span>
+        <span class="stack-desc" style="color:var(--ansi-orange);">Pending style correction notes (accepted violations from previous turn)</span>
+        <span class="stack-note">prepended to next user turn only · ephemeral</span>
+      </div>
+      <div class="stack-row">
+        <span class="stack-badge badge-asst">ASST</span>
+        <span class="stack-desc">intro_statement (first message of conversation)</span>
+      </div>
+      <div class="stack-row">
+        <span class="stack-badge badge-user">USER</span>
+        <span class="stack-desc dim">· · · recent conversation messages (pruned by context management) · · ·</span>
+      </div>
+      <div class="stack-row highlight">
+        <span class="stack-badge badge-user">USER</span>
+        <span class="stack-desc bright">← current message — generation happens here</span>
+      </div>
+    </div>
+
+    <div class="tip"><strong>Key point:</strong> RAG chunks, anchors entries, and author's note are always injected fresh at request time. They are never part of the conversation history that gets summarised or pruned. They are always present regardless of how long the conversation has run.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 09 -->
+  <div class="section" id="authors-note">
+    <h2><span class="tag green">09</span> Author's Note</h2>
+
+    <div class="card green-left">
+      <p><span class="bright">What it is:</span> A block of text re-injected at a fixed depth near the bottom of context on every single turn without exception. The model reads it right before generating.</p>
+      <p><span class="bright">What it's for:</span> Things that are always true right now — character voice, accent, current tone, scene state, rules that drift when the model stops seeing them.</p>
+    </div>
+
+    <h3>Two versions: persistent vs session</h3>
+    <p><span class="bright">Persistent</span> (stored in character config <code>author_note</code>): survives across sessions. Edit via character config editor or accept a Style Overseer violation (which appends a rule to it automatically).</p>
+    <p><span class="bright">Session override</span> (<code>state.sessionAuthorNote</code> / <code>state.sessionAuthorNoteDepth</code>): edited in the Tools tab right sidebar. Discarded when the chat is closed. Never written back to the config file. Useful for in-session adjustments without permanently changing the character.</p>
+
+    <h3>Depth</h3>
+    <p>Depth = how many messages from the bottom of the conversation window the note is inserted before. The model reads the note, then reads the last N messages, then generates.</p>
+    <table>
+      <tr><th>Depth</th><th>Effect</th><th>Use when</th></tr>
+      <tr><td><code>2</code></td><td>Maximum influence. Right above the last 2 messages.</td><td>Voice is still drifting; something critical must hold every turn</td></tr>
+      <tr><td><code>3</code></td><td>Very strong. Recommended for character-critical voices.</td><td>Specific accent, neurodivergent presentation, tight tonal rules</td></tr>
+      <tr><td><code>4</code></td><td>Default. Solid, with room to breathe.</td><td>Most characters</td></tr>
+      <tr><td><code>6+</code></td><td>Lighter touch. Good for general scene anchoring.</td><td>Loose vibe rather than strict voice enforcement</td></tr>
+    </table>
+
+    <h3>What to write</h3>
+    <p>Not prose. Not a prompt. Director's notes. Bullet facts. Concrete and scannable beats better than elaborate paragraphs.</p>
+    <div class="code-block"><span class="comment"># Effective Author's Note — concrete, scannable, right before generation</span>
+<span class="key">[Accent]</span> <span class="val">North London, mild. Uses: mum, bloody, innit, proper, rubbish</span>
+<span class="key">[Tone]</span>   <span class="val">sardonic, flat affect, dry. Emotions stated as facts not performed</span>
+<span class="key">[Scene]</span>  <span class="val">Amy's flat, 7th floor, Scotland. Evening. Raining.</span>
+<span class="key">[Voice]</span>  <span class="val">She reacts. She doesn't echo. Short responses unless hyperfixating.</span></div>
+
+    <div class="tip"><strong>The Style Overseer connection:</strong> Every time you accept a violation in the Style Overseer, it appends a <code>DO NOT: {excerpt} — {suggestion}</code> line to the persistent author's note and saves the config. The note compounds over time as a record of specific caught patterns for this character.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 10 -->
+  <div class="section" id="anchors">
+    <h2><span class="tag yellow">10</span> Anchors</h2>
+
+    <div class="card yellow-left">
+      <p><span class="bright">What it is:</span> Keyword-triggered entries that inject facts into context only when relevant. Nothing fires unless a keyword appears in recent messages — so you can store detailed world and character information without it consuming tokens every turn.</p>
+    </div>
+
+    <h3>How to open it</h3>
+    <p>Right sidebar → Tools tab → Anchors button. Only visible during character chats.</p>
+
+    <h3>Entry structure</h3>
+    <table>
+      <tr><th>Field</th><th>Details</th></tr>
+      <tr><td>Keywords</td><td>Comma-separated. Any match in the last N messages triggers injection (default: 15, configurable via Memory Settings). Case-insensitive. Word-boundary matched — "mum" won't match "museum".</td></tr>
+      <tr><td>Content</td><td>The text injected as a system message when the entry fires. Plain language, not a prompt.</td></tr>
+      <tr><td>Priority</td><td>Integer. Higher fires first. If multiple entries match and the total exceeds the token budget (default: 4000 tokens, configurable), lowest-priority entries are dropped.</td></tr>
+      <tr><td>Character not yet aware</td><td>Checkbox. Changes injection format and enables automated reveal tracking. See section 11.</td></tr>
+    </table>
+
+    <h3>What to put in entries</h3>
+    <p>Specific facts the model tends to get wrong or forget. Secondary character backstories, location details, relationship dynamics, medical/neurodivergent specifics, plot facts that keep getting misremembered. The more precise the content, the more useful the entry.</p>
+
+    <div class="code-block"><span class="comment"># Example entry — secondary character backstory</span>
+<span class="key">keywords:</span>  <span class="val">mum, mother, mam</span>
+<span class="key">priority:</span>  <span class="val">8</span>
+<span class="key">content:</span>
+<span class="val">Kelly's mother: London native, homophobic, abusive, controlling.
+Recently arrested for assault — claw marks on Kelly's arm.
+Kelly remains deeply attached despite everything. Autistic
+attachment pattern: cannot sever bonds even harmful ones.
+She still loves her mum. This is not weakness.</span></div>
+
+    <h3>Good candidates for anchors entries</h3>
+    <table>
+      <tr><th>Type</th><th>Priority recommendation</th></tr>
+      <tr><td>A secondary character's history, motivation, relationship to protagonist</td><td>7–10</td></tr>
+      <tr><td>Location: layout, atmosphere, history</td><td>4–6</td></tr>
+      <tr><td>Medical / neurodivergent presentation detail</td><td>8–10</td></tr>
+      <tr><td>Plot facts that keep getting referenced wrong</td><td>7–9</td></tr>
+      <tr><td>General world-building (fires rarely)</td><td>2–4</td></tr>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 11 -->
+  <div class="section" id="awareness">
+    <h2><span class="tag green">11</span> Character Awareness — automated reveal tracking</h2>
+
+    <div class="card green-left">
+      <p><span class="bright">The problem:</span> Anchors entries often describe facts the character doesn't know yet — a backstory, a secret, something revealed later. Previously this required manually editing the entry when a reveal happened in the story. In a long session that breaks flow.</p>
+      <p><span class="bright">The solution:</span> The model signals its own reveals. When it writes a response in which the character learns something, it emits a hidden text token. The backend intercepts it, flips the entry to "known," and notifies you — without you touching anything.</p>
+    </div>
+
+    <h3>How the injection changes</h3>
+    <p>Normal entry (character_aware = true): injected as a plain fact.</p>
+    <p>Unaware entry (character_aware = false): injected as a two-part message — the fact (for author context) plus a contract with the model:</p>
+
+    <div class="code-block"><span class="comment"># What the model sees when character_aware = false</span>
+<span class="key">[Lore | id:abc123 | Kelly not yet aware]</span>
+<span class="val">Amy is originally from New Haven, CT.
+→ If Kelly learns this during this response, include
+  [LORE_UPDATE:abc123] anywhere in your output
+  (it will be stripped before display).</span></div>
+
+    <h3>What happens when the signal fires</h3>
+    <ul class="body-list">
+      <li><code>[LORE_UPDATE:abc123]</code> is stripped from the response text — you never see it</li>
+      <li>The entry flips to <code>character_aware = true</code> on disk immediately</li>
+      <li>A toast notification appears: <em>"Now aware: amy, girlfriend"</em></li>
+      <li>Every subsequent turn, the entry injects as a normal known fact with no special framing</li>
+    </ul>
+
+    <div class="tip green"><strong>Zero false positives by design.</strong> The model only emits the signal when it's actively writing the reveal in that response. It reads the narrative it just produced and decides — it's not guessing from keywords. This works with any model; stronger models (Grok, Claude, GLM5) are more reliable than weaker ones.</div>
+
+    <h3>How to enable it</h3>
+    <p>Anchors editor → Edit any entry → check <span class="cyan">"Character not yet aware"</span>. The entry shows as muted/italic in the list with a "not yet aware" badge. Uncheck manually at any time if the model missed a reveal.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 12 -->
+  <div class="section" id="rag">
+    <h2><span class="tag purple">12</span> RAG Memory</h2>
+
+    <div class="card purple-left">
+      <p>After every response, a background process chunks the conversation and stores embeddings. Before every subsequent turn, your message is compared against all stored chunks and the most semantically relevant past exchanges are injected silently as context. You never touch this — it runs automatically.</p>
+    </div>
+
+    <h3>Mechanics</h3>
+    <table>
+      <tr><th>Step</th><th>Details</th><th>Default</th></tr>
+      <tr><td>Embedding model</td><td><code>all-MiniLM-L6-v2</code> · 384-dimensional vectors · runs locally</td><td>—</td></tr>
+      <tr><td>Enabled toggle</td><td>Can be fully disabled — stops both indexing and retrieval</td><td>On</td></tr>
+      <tr><td>Chunk size</td><td>Turn-pairs per chunk. Changing this only affects newly embedded messages.</td><td>4</td></tr>
+      <tr><td>Trigger</td><td>After each completed assistant response, background embedding job runs</td><td>—</td></tr>
+      <tr><td>Retrieval</td><td>Your next message is embedded and compared via cosine similarity against all stored chunks</td><td>—</td></tr>
+      <tr><td>Threshold</td><td>Minimum cosine similarity to include a chunk</td><td>0.35</td></tr>
+      <tr><td>Top-k</td><td>Max chunks retrieved per query</td><td>3</td></tr>
+      <tr><td>Token budget</td><td>Max tokens of retrieved content injected per turn</td><td>800</td></tr>
+      <tr><td>Injection position</td><td>Before anchors entries — see prompt assembly diagram (section 08)</td><td>—</td></tr>
+    </table>
+    <p class="dim" style="font-size:0.82rem;">All configurable parameters (enabled, chunk size, threshold, top-k, token budget) are adjustable via Settings → Memory Settings without restart.</p>
+
+    <h3>When it starts helping</h3>
+    <p>After roughly 8–10 turns — enough chunks need to be stored before retrieval becomes meaningful. In a 20,000-word session it becomes the mechanism that surfaces <em>"she mentioned her brother on page 4"</em> without you tracking it.</p>
+
+    <div class="tip"><strong>Semantic, not keyword:</strong> RAG retrieves by meaning similarity, not exact text. "The inspector examined the floor" may retrieve a chunk about the factory from 30 turns ago because both involve investigation. It's imprecise by nature — it doesn't need to be perfect to be useful.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 13 -->
+  <div class="section" id="overseer">
+    <h2><span class="tag orange">13</span> Style Overseer</h2>
+
+    <div class="card orange-left">
+      <p><span class="bright">The problem:</span> LLMs have strong training weight for bad fiction habits — isolated dramatic sentences, beat-only paragraphs, fragment continuations, POV slippage, correction acknowledgment. System prompt rules compete with all other context and fade as the window fills. One uncorrected violation normalises the pattern.</p>
+      <p><span class="bright">What it does:</span> After every streamed response, a secondary LLM call reviews the output and flags violations inline on the message bubble. Each violation can be accepted (strengthens the Author's Note) or dismissed. Operates entirely post-stream — the main chat flow is never blocked.</p>
+    </div>
+
+    <h3>How to enable</h3>
+    <p>Character config → Toggles → <span class="orange">Style Overseer</span> checkbox. Per-character — only active for characters where you explicitly enable it. CoT content is stripped from the text before it is sent to the overseer — <code>&lt;think&gt;…&lt;/think&gt;</code> blocks are removed so the model reviews only the visible prose.</p>
+
+    <h3>The model</h3>
+    <p><code>grok-4-20-beta</code> via Venice. Temperature: 0.1. Max tokens: 1000. Single non-streaming call per response. No character card, no lore, no conversation history — just the response text and the rules prompt.</p>
+
+    <h3>Rules</h3>
+    <p>Six built-in rules always run. Additional rules can be added in the <span class="orange">Overseer</span> tab (right sidebar) — one per line, plain English. Custom rules append as RULE 7, 8, … and are stored in <code>localStorage:overseer_custom_rules</code>. Four model-specific presets (GLM, DeepSeek, Llama, Qwen) are available for common per-model quirks.</p>
+    <ul class="rule-list">
+      <li>
+        <span class="rule-num">R1</span>
+        <span class="rule-body"><strong>No sentence isolation for dramatic effect.</strong> Covers four sub-patterns: (1) a narrative sentence standing alone as its own paragraph; (2) a paragraph consisting entirely of short physical-reaction beats with no descriptive content; (3) a trailing kicker — short, punchy, final sentence at the end of a paragraph landing for emotional emphasis; (4) a sentence fragment used as a continuation beat (no subject). <em>Dialogue lines on their own line are explicitly excluded.</em></span>
+      </li>
+      <li>
+        <span class="rule-num">R2</span>
+        <span class="rule-body"><strong>No double-spacing between paragraphs.</strong> Extra blank lines used for dramatic rhythm — not standard single-blank-line paragraph separation.</span>
+      </li>
+      <li>
+        <span class="rule-num">R3</span>
+        <span class="rule-body"><strong>Strict 3rd-person limited POV.</strong> The narrator may access only the viewpoint character's own perceptions, sensations, and thoughts. Narrating another character's inner state, intent, or feeling is a violation. Observing external behaviour is fine — interpreting it as internal state is not.</span>
+      </li>
+      <li>
+        <span class="rule-num">R4</span>
+        <span class="rule-body"><strong>No correction acknowledgment.</strong> Phrases like "I've adjusted," "you're right," "as instructed," "noted," "I'll make sure" break the fiction frame entirely. The co-author should never acknowledge receiving direction.</span>
+      </li>
+      <li>
+        <span class="rule-num">R5</span>
+        <span class="rule-body"><strong>No verbatim echo.</strong> Lifting exact phrases from the user's last message directly into the response.</span>
+      </li>
+      <li>
+        <span class="rule-num">R6</span>
+        <span class="rule-body"><strong>No unattributed dialogue.</strong> Every line of dialogue must have a clear speaker — either a dialogue tag (<em>"she said"</em>) or immediately adjacent action that makes the speaker unambiguous. A floating line with no attribution is a violation.</span>
+      </li>
+    </ul>
+
+    <h3>UI: badge and tooltip</h3>
+    <p>After the stream ends, an amber spinner appears while the overseer call runs (grok is slow). If violations are found, a <span class="orange">⚑ N</span> badge appears in the assistant message action bar. N is the violation count. Clicking it opens a tooltip showing all violations. The chat auto-scrolls to show the tooltip when it opens.</p>
+    <table>
+      <tr><th>Interaction</th><th>What happens</th></tr>
+      <tr><td>Click badge</td><td>Tooltip opens listing all violations: rule number, exact offending excerpt (≤100 chars), one-line suggestion. Tooltip stays open after individual actions — you work through violations one at a time.</td></tr>
+      <tr><td>Accept a violation</td><td>1. The offending excerpt is replaced in-place with the corrected text — the message bubble updates immediately, no flash or reload. 2. Corrected text is marked with an <span class="orange">amber dotted underline</span>; hovering shows the original phrase in a browser tooltip. 3. Calls <code>_updateAuthorNoteWithViolation()</code> which appends <code>DO NOT: "{excerpt}" — {suggestion}</code> to the persistent author's note and saves the config file. 4. Chat is auto-saved with the corrected prose — exported text contains the correction. 5. Removes that violation from the tooltip. If the last violation, removes the badge.</td></tr>
+      <tr><td>Dismiss a violation</td><td>Removes the violation from the tooltip. No other action taken.</td></tr>
+      <tr><td>All resolved</td><td>Badge disappears.</td></tr>
+    </table>
+
+    <h3>Auto-accept mode</h3>
+    <p>Overseer tab → <span class="orange">Auto-accept corrections</span> checkbox (persisted in <code>localStorage:overseer_auto_accept</code>). When active, the overseer runs silently after each response: no badge, no tooltip. All violations are applied as in-place text replacements, each corrected passage is marked with an amber dotted underline, the author's note is updated for each violation, and the chat is saved. CoT content (<code>&lt;think&gt;…&lt;/think&gt;</code>) is stripped before replacements are applied and is not included in the saved message.</p>
+
+    <div class="tip orange"><strong>The compounding mechanism:</strong> Each accepted violation appends a specific DO NOT line to the Author's Note, which is re-injected near generation point on every subsequent turn. As sessions progress, the author's note builds up a precise, character-specific record of caught patterns — and the constraints compound because they're always present at the highest-influence position in context.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 15 -->
+  <div class="section" id="memory-settings">
+    <h2><span class="tag cyan">15</span> Memory &amp; Context Settings</h2>
+
+    <div class="card cyan-left">
+      <p>A dedicated near-fullscreen modal for tuning all memory stack and context management parameters without restarting the server. Changes take effect on the next request. Access: gear icon → <span class="bright">Memory Settings</span>.</p>
+    </div>
+
+    <h3>Context Summarization</h3>
+    <table>
+      <tr><th>Setting</th><th>What it controls</th><th>Default</th></tr>
+      <tr><td>Trigger threshold</td><td>Fraction of the model's context window before auto-summarise fires</td><td>75%</td></tr>
+      <tr><td>Messages to keep after prune</td><td>Message pairs preserved in raw history when the covered messages are deleted on approval</td><td>5</td></tr>
+      <tr><td>Summarization model</td><td>Which model performs the summarisation call</td><td>grok-4-20-beta</td></tr>
+      <tr><td>Summary max tokens</td><td>Output token limit for the summarisation call — reducing this truncates, not condenses</td><td>10,000</td></tr>
+    </table>
+
+    <h3>RAG Semantic Memory</h3>
+    <table>
+      <tr><th>Setting</th><th>What it controls</th><th>Default</th></tr>
+      <tr><td>Enabled</td><td>Toggle RAG indexing and retrieval on/off globally</td><td>On</td></tr>
+      <tr><td>Chunks retrieved (top-k)</td><td>Max past chunks included per turn</td><td>3</td></tr>
+      <tr><td>Similarity threshold</td><td>Minimum cosine similarity to include a chunk</td><td>0.35</td></tr>
+      <tr><td>Token budget</td><td>Max tokens of retrieved content injected per turn</td><td>800</td></tr>
+      <tr><td>Messages per chunk *</td><td>Turn-pairs per chunk at embedding time</td><td>4</td></tr>
+    </table>
+    <p class="dim" style="font-size:0.82rem;">* Chunk size only affects newly embedded messages. Previously indexed chunks are not re-embedded when this value changes.</p>
+
+    <h3>Lore / Anchors</h3>
+    <table>
+      <tr><th>Setting</th><th>What it controls</th><th>Default</th></tr>
+      <tr><td>Keyword scan depth</td><td>Number of recent messages scanned for keyword matches</td><td>15</td></tr>
+      <tr><td>Token budget</td><td>Max tokens injected from matched lore entries per turn</td><td>4,000</td></tr>
+    </table>
+
+    <h3>Persistence</h3>
+    <p>Settings are written to <code>memory_settings.json</code> in the project root. The backend reads this file on each request (with a mtime-based cache) so changes are live immediately after saving — no server restart required. If the file does not exist, all defaults apply.</p>
+
+    <div class="tip orange"><strong>Why this matters:</strong> GLM 5 (and other models with smaller effective windows) write noticeably better output when the memory stack overhead is reduced. If you notice quality degradation on long chats — try lowering the lore token budget, reducing RAG top-k, or bumping the summarise threshold down so summaries fire earlier and keep the raw context window lighter.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 16 -->
+  <div class="section" id="setup">
+    <h2><span class="tag cyan">16</span> Quick setup for a new character</h2>
+
+    <div class="card">
+      <h3 style="margin-top:0;">1 — System Prompt + Character Card</h3>
+      <p>Core identity. Permanent — never pruned. Who the character fundamentally is. Write it once, rarely touch it again.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;">2 — Author's Note</h3>
+      <p>Always-true right now facts: voice, accent, tone, current scene state. Your highest-leverage tool. Set depth to <span class="cyan">3</span> for tight character voices, <span class="cyan">4</span> for everything else. If something is drifting, lower depth by 1 before anything else.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;">3 — Anchors</h3>
+      <p>5–10 precise entries beats 30 vague ones. Add backstory facts the model gets wrong, location details, relationship dynamics. For facts the character doesn't know yet, check <span class="cyan">"Character not yet aware"</span> — the system handles the reveal transition automatically.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;">4 — RAG</h3>
+      <p>Let it run in the background — defaults are fine for most cases. It starts contributing meaningfully after about 10 turns. If a model feels slow or context-heavy, reduce top-k (try 1–2) or lower the similarity threshold slightly via Memory Settings.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;">5 — Style Overseer (optional)</h3>
+      <p>Enable in Toggles if you want post-stream prose review. Start in badge mode — review each violation and accept the ones that matter to build up the Author's Note organically. Switch to auto-accept once you've established a clean baseline.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;">6 — Dual Model (optional)</h3>
+      <p>When you want two characters to interact autonomously. Create a second character config first. Set a realistic turn limit (8–12 for meaningful exchanges without runaway repetition). Use the Continue button to extend if a scene is going well.</p>
+    </div>
+
+    <hr>
+    <div class="card accent-left">
+      <p class="dim" style="font-size:0.8rem;">Lagoon v1.3 · Updated March 2026 · All sections verified from source code. Memory &amp; Context Settings (§15) added.</p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
