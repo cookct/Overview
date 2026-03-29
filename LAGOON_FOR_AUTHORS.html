@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lagoon — Built for AI Authors</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #1e1e1e;
+    --bg-darker: #181818;
+    --bg-panel: #252526;
+    --bg-card: rgba(30, 30, 30, 0.85);
+    --text-main: #d4d4d4;
+    --text-dim: #a0a0a0;
+    --text-bright: #ffffff;
+    --accent: #0e639c;
+    --accent-hover: #1177bb;
+    --border: #3872aa;
+    --border-subtle: #2a2a2a;
+    --ansi-red: #f44747;
+    --ansi-green: #6a9955;
+    --ansi-yellow: #d7ba7d;
+    --ansi-blue: #569cd6;
+    --ansi-magenta: #c586c0;
+    --ansi-cyan: #4fc1ff;
+    --ansi-orange: #e6a817;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: var(--bg-darker);
+    background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('images/matrix1.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: var(--text-main);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  .page { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .header { border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 40px; }
+  .header-tag { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ansi-cyan); margin-bottom: 8px; }
+  h1 { font-size: 1.9rem; font-weight: 700; color: var(--text-bright); letter-spacing: -0.02em; line-height: 1.2; }
+  h1 span { color: var(--ansi-cyan); }
+  .header-sub { margin-top: 10px; color: var(--text-dim); font-size: 0.9rem; }
+
+  h2 { font-size: 1.1rem; font-weight: 600; color: var(--text-bright); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  h2 .tag { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; background: var(--accent); color: #fff; }
+  h2 .tag.green  { background: #1e4620; color: var(--ansi-green); }
+  h2 .tag.yellow { background: #3d3317; color: var(--ansi-yellow); }
+  h2 .tag.cyan   { background: #0d2a38; color: var(--ansi-cyan); }
+  h2 .tag.purple { background: #2d1f38; color: var(--ansi-magenta); }
+  h2 .tag.orange { background: #3a2800; color: var(--ansi-orange); }
+  h2 .tag.red    { background: #3a1a1a; color: var(--ansi-red); }
+  h2 .tag.blue   { background: #1a2a3a; color: var(--ansi-blue); }
+
+  h3 { font-size: 0.85rem; font-weight: 600; color: var(--ansi-blue); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; margin-top: 22px; }
+
+  .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 20px 22px; margin-bottom: 16px; backdrop-filter: blur(8px); }
+  .card.accent-left  { border-left: 3px solid var(--accent); }
+  .card.green-left   { border-left: 3px solid var(--ansi-green); }
+  .card.yellow-left  { border-left: 3px solid var(--ansi-yellow); }
+  .card.cyan-left    { border-left: 3px solid var(--ansi-cyan); }
+  .card.purple-left  { border-left: 3px solid var(--ansi-magenta); }
+  .card.orange-left  { border-left: 3px solid var(--ansi-orange); }
+  .card.red-left     { border-left: 3px solid var(--ansi-red); }
+  .card.blue-left    { border-left: 3px solid var(--ansi-blue); }
+
+  .section { margin-bottom: 52px; }
+
+  p { color: var(--text-main); font-size: 0.9rem; margin-bottom: 12px; }
+  p:last-child { margin-bottom: 0; }
+
+  .dim     { color: var(--text-dim); }
+  .bright  { color: var(--text-bright); font-weight: 500; }
+  .cyan    { color: var(--ansi-cyan); }
+  .green   { color: var(--ansi-green); }
+  .yellow  { color: var(--ansi-yellow); }
+  .red     { color: var(--ansi-red); }
+  .magenta { color: var(--ansi-magenta); }
+  .orange  { color: var(--ansi-orange); }
+
+  .example-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+  @media (max-width: 600px) { .example-pair { grid-template-columns: 1fr; } }
+  .ex-bad, .ex-good { border-radius: 4px; padding: 12px 14px; font-size: 0.82rem; line-height: 1.55; }
+  .ex-bad  { background: rgba(244,71,71,0.08);  border: 1px solid rgba(244,71,71,0.25);  color: #cc8888; }
+  .ex-good { background: rgba(106,153,85,0.08); border: 1px solid rgba(106,153,85,0.3);  color: #98c080; }
+  .ex-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; display: block; }
+  .ex-bad .ex-label  { color: var(--ansi-red); }
+  .ex-good .ex-label { color: var(--ansi-green); }
+
+  hr { border: none; border-top: 1px solid var(--border-subtle); margin: 40px 0; }
+
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  @media (max-width: 600px) { .feature-grid { grid-template-columns: 1fr; } }
+  .feature-tile { background: rgba(0,0,0,0.55); border: 1px solid var(--border-subtle); border-radius: 5px; padding: 14px 16px; font-size: 0.82rem; }
+  .feature-tile .ft-icon { font-size: 1.2rem; margin-bottom: 8px; display: block; }
+  .feature-tile .ft-name { font-weight: 600; color: var(--text-bright); margin-bottom: 6px; font-size: 0.88rem; }
+  .feature-tile .ft-desc { color: var(--text-dim); line-height: 1.5; }
+  .feature-tile .ft-highlight { color: var(--ansi-cyan); font-weight: 500; }
+
+  .pain-card { background: rgba(244,71,71,0.05); border: 1px solid rgba(244,71,71,0.2); border-radius: 6px; padding: 16px 20px; margin-bottom: 10px; }
+  .pain-card .pain-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ansi-red); margin-bottom: 6px; }
+  .pain-card p { color: #cc8888; font-size: 0.87rem; }
+
+  .fix-card { background: rgba(106,153,85,0.06); border: 1px solid rgba(106,153,85,0.25); border-radius: 6px; padding: 16px 20px; margin-bottom: 10px; }
+  .fix-card .fix-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ansi-green); margin-bottom: 6px; }
+  .fix-card p { color: #98c080; font-size: 0.87rem; }
+
+  .tip { background: rgba(14,99,156,0.1); border: 1px solid rgba(56,114,170,0.4); border-radius: 4px; padding: 12px 14px; font-size: 0.83rem; color: var(--text-main); margin: 12px 0; }
+  .tip strong { color: var(--ansi-cyan); }
+  .tip.orange { background: rgba(230,168,23,0.07); border-color: rgba(230,168,23,0.3); }
+  .tip.orange strong { color: var(--ansi-orange); }
+  .tip.green { background: rgba(106,153,85,0.07); border-color: rgba(106,153,85,0.3); }
+  .tip.green strong { color: var(--ansi-green); }
+  .tip.purple { background: rgba(197,134,192,0.07); border-color: rgba(197,134,192,0.3); }
+  .tip.purple strong { color: var(--ansi-magenta); }
+
+  .flow-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 0.85rem; }
+  .flow-step { background: rgba(0,0,0,0.4); border: 1px solid #333; border-radius: 4px; padding: 8px 14px; color: var(--text-main); flex: 1; }
+  .flow-arrow { color: var(--ansi-cyan); font-size: 1rem; flex-shrink: 0; }
+  .flow-step.highlight { border-color: rgba(79,193,255,0.4); background: rgba(14,99,156,0.1); }
+  .flow-step.green { border-color: rgba(106,153,85,0.4); background: rgba(106,153,85,0.07); color: #98c080; }
+  .flow-step.orange { border-color: rgba(230,168,23,0.4); background: rgba(230,168,23,0.07); color: var(--ansi-yellow); }
+  .flow-step.purple { border-color: rgba(197,134,192,0.35); background: rgba(197,134,192,0.07); color: var(--ansi-magenta); }
+  @media (max-width: 520px) { .flow-row { flex-direction: column; } .flow-arrow { transform: rotate(90deg); } }
+
+  .rule-list { list-style: none; margin: 12px 0; display: flex; flex-direction: column; gap: 6px; }
+  .rule-list li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.87rem; padding: 8px 12px; background: rgba(0,0,0,0.25); border-radius: 4px; border-left: 2px solid #333; }
+  .rule-icon { font-size: 0.9rem; min-width: 20px; margin-top: 1px; }
+  .rule-body { color: var(--text-main); line-height: 1.5; }
+  .rule-body strong { color: var(--text-bright); }
+  .rule-body em { color: var(--text-dim); font-style: italic; }
+
+  .toc { background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 16px 20px; margin-bottom: 40px; font-size: 0.83rem; }
+  .toc-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
+  .toc a { display: block; color: var(--ansi-blue); text-decoration: none; padding: 3px 0; transition: color 0.15s; }
+  .toc a:hover { color: var(--ansi-cyan); }
+  .toc a .num { color: #666; margin-right: 8px; font-family: monospace; }
+
+  .badge-inline { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; display: inline-block; vertical-align: middle; margin-left: 4px; }
+  .badge-new    { background: #1e3a1e; color: #8fcc6f; }
+  .badge-unique { background: #2d1f38; color: var(--ansi-magenta); }
+
+  .providers { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+  .provider-pill { background: rgba(0,0,0,0.4); border: 1px solid #333; border-radius: 20px; padding: 4px 14px; font-size: 0.78rem; color: var(--ansi-cyan); }
+
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+  @media (max-width: 560px) { .stat-row { grid-template-columns: 1fr 1fr; } }
+  .stat-tile { background: rgba(0,0,0,0.4); border: 1px solid #2a2a2a; border-radius: 5px; padding: 14px; text-align: center; }
+  .stat-num  { font-size: 1.4rem; font-weight: 700; color: var(--ansi-cyan); line-height: 1.2; }
+  .stat-desc { font-size: 0.72rem; color: var(--text-dim); margin-top: 4px; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── HEADER ─────────────────────────────────────────────────── -->
+  <div class="header">
+    <div class="header-tag">Lagoon v1.3 · For AI Authors</div>
+    <h1><span>//</span> Your Story Deserves Better Than a Chat Window</h1>
+    <p class="header-sub">Lagoon is a local AI writing workspace built specifically for long-form collaborative fiction. Character-driven, memory-equipped, prose-quality obsessed.</p>
+  </div>
+
+  <!-- ── HERO CARD ───────────────────────────────────────────────── -->
+  <div class="card accent-left" style="margin-bottom: 40px;">
+    <p>If you've been using an AI for collaborative fiction, you've run into the wall. The model forgets what happened three scenes ago. It breaks character. It writes "His eyes widened in shock." for the fourth time in a row. The context fills up and suddenly your character doesn't know her own backstory.</p>
+    <p style="margin-top:12px;">Lagoon was built to fix all of that. It's not a chat app with a system prompt — it's a writing environment where the system is actively working to keep your story coherent, your character in voice, and your prose quality high. Every turn, automatically.</p>
+    <p style="margin-top:12px;"><span class="bright">Bring your own models.</span> Venice.ai · Together.ai · HuggingFace · Ollama (local) · Any OpenAI-compatible endpoint. Paste your API keys and run. No subscriptions, no cloud accounts, no data leaving your machine.</p>
+  </div>
+
+  <!-- ── TOC ─────────────────────────────────────────────────────── -->
+  <div class="toc">
+    <div class="toc-title">What's in here</div>
+    <a href="#character"><span class="num">01</span> Your character, persistent across hundreds of turns</a>
+    <a href="#memory"><span class="num">02</span> Memory — the story remembers itself</a>
+    <a href="#anchors"><span class="num">03</span> Anchors — world knowledge that doesn't waste tokens</a>
+    <a href="#awareness"><span class="num">04</span> Character Awareness — automatic reveal tracking</a>
+    <a href="#overseer"><span class="num">05</span> Style Overseer — fixing AI's bad prose habits</a>
+    <a href="#authors-note"><span class="num">06</span> Author's Note — your persistent nudge</a>
+    <a href="#context"><span class="num">07</span> Long stories don't die</a>
+    <a href="#writing-tools"><span class="num">08</span> Writing tools — fork, nudge, regenerate</a>
+    <a href="#dual"><span class="num">09</span> Dual Model — characters talking to each other</a>
+    <a href="#models"><span class="num">10</span> Model freedom</a>
+    <a href="#start"><span class="num">11</span> Getting started</a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 01 -->
+  <div class="section" id="character">
+    <h2><span class="tag cyan">01</span> Your character, persistent across hundreds of turns</h2>
+
+    <div class="card cyan-left">
+      <p>In Lagoon, a character is more than a system prompt. It's a complete profile — voice, personality, backstory, world context, tone rules — that travels with every conversation. Your character doesn't reset between sessions. The same voice, the same rules, every time you open a chat.</p>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-tile">
+        <div class="ft-name">System Prompt</div>
+        <div class="ft-desc">Who they are, how they speak, what they never do. Permanent — it never gets pruned from context no matter how long the story gets.</div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">World Context</div>
+        <div class="ft-desc">The setting, the rules of your world, background the model needs to know. Also permanent in context. Separate from the character voice.</div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Opening Line</div>
+        <div class="ft-desc">Set an intro statement — the character's first words before you've said anything. Establishes voice and scene from turn zero.</div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Avatar</div>
+        <div class="ft-desc">Generate a portrait from your character description with one click. Stored locally. Persists across every chat with that character.</div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <strong>One config, many stories.</strong> Character configs are reusable. Open a new chat with the same character and everything carries over — voice, rules, lore, tone. The story history is separate; the character is not.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 02 -->
+  <div class="section" id="memory">
+    <h2><span class="tag green">02</span> Memory — the story remembers itself</h2>
+
+    <div class="card green-left">
+      <p>After every exchange, Lagoon chunks the conversation and builds a searchable memory of what happened. Before each new turn, it finds the chunks most relevant to what you just said and quietly injects them into context. The story recalls its own past — without you having to remind it.</p>
+    </div>
+
+    <div class="example-pair">
+      <div class="ex-bad">
+        <span class="ex-label">Without memory</span>
+        You: "What did she say about her brother?"<br><br>
+        AI: "I'm not sure — could you remind me what was discussed earlier in our conversation?"
+      </div>
+      <div class="ex-good">
+        <span class="ex-label">With Lagoon RAG memory</span>
+        You: "What did she say about her brother?"<br><br>
+        AI: <em>(retrieves the exchange from turn 23 automatically)</em> "She mentioned he left for the coast before the war. Never came back."
+      </div>
+    </div>
+
+    <h3>How it works — without the jargon</h3>
+    <p>Every few turns, Lagoon takes your conversation and breaks it into chunks. Each chunk gets a fingerprint. When you write something new, Lagoon finds the chunks whose fingerprints most closely match — and quietly drops them into context, right before your turn. You never see it. The model just knows.</p>
+
+    <div class="stat-row">
+      <div class="stat-tile">
+        <div class="stat-num">100%</div>
+        <div class="stat-desc">Local — runs on your machine, no API calls for memory</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-num">~8–10</div>
+        <div class="stat-desc">Turns before memory starts contributing meaningfully</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-num">∞</div>
+        <div class="stat-desc">No session limit — memory grows with the story</div>
+      </div>
+    </div>
+
+    <div class="tip green">
+      <strong>Configurable.</strong> Adjust how many past chunks to retrieve, how closely they need to match, how many tokens they're allowed to use — all live in Memory Settings, no restart needed. Or turn it off entirely.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 03 -->
+  <div class="section" id="anchors">
+    <h2><span class="tag yellow">03</span> Anchors — world knowledge that doesn't waste tokens</h2>
+
+    <div class="card yellow-left">
+      <p>You've got world-building facts, character histories, faction details, location descriptions. If you put them all in the system prompt, they eat your context budget on every single turn — even when they're irrelevant. Anchors only fire when you need them.</p>
+    </div>
+
+    <p>Write a lore entry. Assign it keywords. When those keywords appear in the recent conversation, the entry injects silently as context for that turn. When they don't appear, it costs nothing.</p>
+
+    <div class="example-pair">
+      <div class="ex-bad">
+        <span class="ex-label">Without Anchors</span>
+        Option A: cram everything into the system prompt, blowing 2,000 tokens on backstory the model doesn't need this turn.<br><br>
+        Option B: leave it out, and watch the model invent history on the fly.
+      </div>
+      <div class="ex-good">
+        <span class="ex-label">With Anchors</span>
+        "The Kael family history" entry has keywords: <em>Kael, family, parents, Mira's father</em>.<br><br>
+        It only appears in context when someone mentions the Kaels. Otherwise: 0 tokens used.
+      </div>
+    </div>
+
+    <ul class="rule-list">
+      <li>
+        <span class="rule-icon">⚡</span>
+        <div class="rule-body"><strong>Priority order.</strong> Multiple entries can fire at once. Higher-priority entries inject first. <em>Put "who she is at her core" above "that obscure noble house she mentioned once."</em></div>
+      </li>
+      <li>
+        <span class="rule-icon">💰</span>
+        <div class="rule-body"><strong>Token budget.</strong> Set a cap on how many tokens Anchors can use per turn. If you hit the limit, lower-priority entries get dropped. Your context budget stays predictable.</div>
+      </li>
+      <li>
+        <span class="rule-icon">🔍</span>
+        <div class="rule-body"><strong>Scan depth.</strong> Controls how far back in the conversation Lagoon looks for keywords. Default: last 15 messages. Adjust if your story has long gaps between references.</div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 04 -->
+  <div class="section" id="awareness">
+    <h2><span class="tag purple">04</span> Character Awareness — automatic reveal tracking <span class="badge-inline badge-unique">Unique</span></h2>
+
+    <div class="card purple-left">
+      <p>This is the feature that doesn't exist anywhere else. Mark a lore entry as <span class="bright">"character not yet aware."</span> From that point on, the model is told: this is true, but your character doesn't know it yet. When the reveal finally happens in the story — when the model writes it — Lagoon detects it automatically and marks the entry as known. No manual tracking. No forgetting to update it. It just works.</p>
+    </div>
+
+    <div class="flow-row">
+      <div class="flow-step">You write: <em>"Her brother is still alive — she doesn't know yet"</em></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step highlight">Mark as: <em>"character not yet aware"</em></div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-step highlight">Lagoon injects: <em>"This is true, but Elena doesn't know it. If she learns this turn, signal it."</em></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step green">Model writes the reveal. Lagoon catches the signal.</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-step green">Entry flips to: <em>"aware"</em></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step orange">Toast notification: <em>"Elena now knows: her brother is alive."</em></div>
+    </div>
+
+    <div class="tip purple">
+      <strong>Why this matters:</strong> In a long story with multiple reveals, tracking "does she know this yet?" manually is exhausting and error-prone. Lagoon handles it automatically. The model knows what the character knows. The moment that changes, so does the system.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 05 -->
+  <div class="section" id="overseer">
+    <h2><span class="tag orange">05</span> Style Overseer — fixing AI's bad prose habits <span class="badge-inline badge-unique">Unique</span></h2>
+
+    <div class="card orange-left">
+      <p>AI models have consistent, repeatable bad habits. They double-space after sentences. They write single dramatic lines as their own paragraph. They slip out of third-person. They open responses by restating what you just said. They write unattributed dialogue that floats with no action anchor. After a long session, these patterns compound and the prose degrades.</p>
+      <p style="margin-top: 10px;">The Style Overseer reviews every response after it streams, flags each violation, and lets you fix it in place.</p>
+    </div>
+
+    <div class="example-pair" style="margin-bottom: 18px;">
+      <div class="ex-bad">
+        <span class="ex-label">What you get without intervention</span>
+        She looked at him. Her eyes widened in shock. She couldn't believe what she was hearing.<br><br>
+        <em>Three sentences. Three paragraphs. The middle one is a cliché standing alone for dramatic effect.</em>
+      </div>
+      <div class="ex-good">
+        <span class="ex-label">After the Overseer flags and you accept</span>
+        She looked at him. She couldn't believe what she was hearing.<br><br>
+        <em>Isolated dramatic sentence merged into the paragraph. Cliché gone. One click.</em>
+      </div>
+    </div>
+
+    <h3>Six built-in rules (on by default, optional)</h3>
+    <ul class="rule-list">
+      <li>
+        <span class="rule-icon">✗</span>
+        <div class="rule-body"><strong>Isolated dramatic sentences.</strong> <em>"She was already gone." standing alone as its own paragraph.</em> The Overseer flags it. You decide if it stays.</div>
+      </li>
+      <li>
+        <span class="rule-icon">✗</span>
+        <div class="rule-body"><strong>Double spacing.</strong> <em>Two spaces after a period.</em> Small thing, constant thing. Caught automatically.</div>
+      </li>
+      <li>
+        <span class="rule-icon">✗</span>
+        <div class="rule-body"><strong>POV slippage.</strong> <em>Third-person story suddenly reads "I felt a chill run down my spine."</em> The model broke perspective. Flagged.</div>
+      </li>
+      <li>
+        <span class="rule-icon">✗</span>
+        <div class="rule-body"><strong>Correction acknowledgment.</strong> <em>"You're right, I apologize for the confusion earlier—"</em> The model stepped outside the story to respond to your direction. Stripped.</div>
+      </li>
+      <li>
+        <span class="rule-icon">✗</span>
+        <div class="rule-body"><strong>Verbatim echo.</strong> <em>The AI opens by paraphrasing what you just said.</em> "You reached for the door — and as your hand closed around the handle…"</div>
+      </li>
+      <li>
+        <span class="rule-icon">✗</span>
+        <div class="rule-body"><strong>Unattributed dialogue.</strong> <em>A line of dialogue with no action, tag, or anchor to show who's moving in the scene.</em></div>
+      </li>
+    </ul>
+
+    <h3>And your own rules, in plain English</h3>
+    <p>Add rules like: <em>"Do not use the phrase 'a mix of'"</em> or <em>"Never open a paragraph with a gerund"</em> or <em>"This character does not use contractions."</em> Written in plain English. Applied every turn.</p>
+
+    <h3>How accepting a correction works</h3>
+    <div class="flow-row">
+      <div class="flow-step">Overseer flags a violation with an excerpt</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step highlight">You hit Accept</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-step highlight">Offending text replaced in-place in the message bubble</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step orange">Rule added to Author's Note: <em>"DO NOT: [excerpt]"</em></div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-step orange">Author's Note injects near generation point next turn</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step green">Model trained away from the pattern. It compounds.</div>
+    </div>
+
+    <div class="tip orange">
+      <strong>Auto-accept mode:</strong> Enable it and the Overseer runs silently on every response — no badge, no prompt. Every violation is fixed automatically. Corrections still accumulate in the Author's Note. The prose quality just steadily improves on its own.
+    </div>
+
+    <div class="tip">
+      <strong>Model presets:</strong> GLM, DeepSeek, Llama, and Qwen each have known bad habits. Load the preset for your model and those model-specific rules are added automatically.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 06 -->
+  <div class="section" id="authors-note">
+    <h2><span class="tag blue">06</span> Author's Note — your persistent nudge</h2>
+
+    <div class="card blue-left">
+      <p>Some instructions need to be close to where the model generates, not buried at the top of a long context. The Author's Note re-injects at a configurable depth from the bottom on every single turn — right before the model writes. Perfect for tone reminders, current scene context, or things you don't want the model to forget mid-session.</p>
+    </div>
+
+    <div class="example-pair">
+      <div class="ex-bad">
+        <span class="ex-label">Without it</span>
+        You put tone guidance in the system prompt 200 messages ago. The model has long since drifted. You're now getting warm, gentle responses from a character who should be cold and controlled.
+      </div>
+      <div class="ex-good">
+        <span class="ex-label">Author's Note</span>
+        <em>[Tone] She is controlled, not warm. Every kindness she shows costs her something. Do not let her soften.</em><br><br>
+        Re-injected 4 messages from the bottom. Every turn. She doesn't soften.
+      </div>
+    </div>
+
+    <p>Depth is configurable. Default is 4 messages from the bottom — close enough to matter, not so close it crowds the model. For fast-paced scenes, move it to 2. For more stable characters, push it out to 8.</p>
+
+    <div class="tip">
+      <strong>Session-only override:</strong> The sidebar Author's Note panel is session-only. Changes there don't touch the saved character config. Close the chat, they're gone. Use it for temporary scene-specific notes — the config version handles the permanent voice rules.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 07 -->
+  <div class="section" id="context">
+    <h2><span class="tag red">07</span> Long stories don't die</h2>
+
+    <div class="card red-left">
+      <p>Every AI has a context limit — a cap on how much text it can hold in its attention at once. When you hit it, something has to go. Lagoon handles this gracefully, with your approval, so you never lose the thread of a long story.</p>
+    </div>
+
+    <h3>What happens when the context fills up</h3>
+    <div class="flow-row">
+      <div class="flow-step">Context hits 75% of the model's limit <em>(configurable)</em></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step highlight">Lagoon generates a summary of the conversation so far</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-step highlight">Summary is flagged as pending. A banner appears.</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step orange">Nothing is deleted until you approve</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-step orange">You approve. Older messages are pruned.</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step green">Summary injects as context. Story continues.</div>
+    </div>
+
+    <p style="margin-top: 16px;">Summaries stack. Each new one is told what's already been summarized so it doesn't repeat. The character's permanent system prompt and world context are never touched — only the conversation history gets pruned.</p>
+
+    <div class="tip green">
+      <strong>Manual trigger available.</strong> Don't wait for the threshold. Prompt Monitor tab → Summarize Now. Use it to create a chapter break, clean up a sprawling scene, or just keep the context tidy on your own schedule.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 08 -->
+  <div class="section" id="writing-tools">
+    <h2><span class="tag cyan">08</span> Writing tools — fork, nudge, regenerate</h2>
+
+    <div class="card cyan-left">
+      <p>Every assistant response has a toolbar. These aren't chat features — they're writing features. The difference matters in a long story.</p>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-tile">
+        <div class="ft-name">Fork</div>
+        <div class="ft-desc">Branch the story from any response. A new chat is created containing the full history up to that point. The original is untouched. <span class="ft-highlight">Explore parallel paths without committing.</span></div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Nudge &amp; Regenerate</div>
+        <div class="ft-desc">Write an out-of-character direction — <em>"make her angrier"</em>, <em>"slow this scene down"</em>, <em>"he would never say that, try again."</em> It injects invisibly for the regeneration only. <span class="ft-highlight">Never appears in the visible story.</span></div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Writing Tools Menu</div>
+        <div class="ft-desc">Rewrite with a specific directive — expand, condense, shift tone, change perspective. One click, regenerates immediately using that directive. <span class="ft-highlight">The menu repositions smartly so it's always visible.</span></div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Keep for Export</div>
+        <div class="ft-desc">Mark specific responses. When you're done, export only the kept messages. Build a clean draft from your best exchanges without manually copying and pasting. <span class="ft-highlight">The mark persists between sessions.</span></div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Edit in Place</div>
+        <div class="ft-desc">Click any response to edit it directly. The edited version replaces what was there and saves to the chat history. <span class="ft-highlight">Fix a sentence without regenerating the whole thing.</span></div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Delete Pair</div>
+        <div class="ft-desc">Remove an exchange you don't want in the history — both the user turn and the response. The story rolls back cleanly to the previous exchange.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 09 -->
+  <div class="section" id="dual">
+    <h2><span class="tag magenta">09</span> Dual Model — characters talking to each other</h2>
+
+    <div class="card purple-left">
+      <p>Set up two characters — each with their own model, system prompt, and temperature — and let them run an automated conversation. You write the opening line. They do the rest until you stop them.</p>
+    </div>
+
+    <p>Each character brings their full setup. Model A responds, Model B receives that as a prompt and responds, they alternate. You control the pace: pause at any moment, resume, add a turn limit, or stop and redirect. Manual intervention — editing or regenerating any message — auto-pauses so you don't lose your place.</p>
+
+    <div class="tip purple">
+      <strong>Where it shines:</strong> generating a scene between two characters where you want both voices to be reactive to each other, not scripted. Two models, each playing their role, each responding to what the other actually said. The dialogue stays organic.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 10 -->
+  <div class="section" id="models">
+    <h2><span class="tag green">10</span> Model freedom</h2>
+
+    <div class="card green-left">
+      <p>Your character config stores the model. Switch mid-story by editing the config — the conversation history carries over unchanged. Venice today, a local Ollama model when you're offline, Together tomorrow. One writing environment, all your models.</p>
+    </div>
+
+    <div class="providers">
+      <span class="provider-pill">Venice.ai</span>
+      <span class="provider-pill">Together.ai</span>
+      <span class="provider-pill">HuggingFace</span>
+      <span class="provider-pill">Ollama (local)</span>
+      <span class="provider-pill">KoboldCpp</span>
+      <span class="provider-pill">llama.cpp</span>
+      <span class="provider-pill">LM Studio</span>
+      <span class="provider-pill">Any OpenAI-compatible endpoint</span>
+    </div>
+
+    <p style="margin-top: 8px;">BYOK — paste your API keys in settings. No accounts, no Lagoon subscription. Lagoon is a local application, not a service.</p>
+
+    <div class="tip">
+      <strong>Venice E2EE:</strong> For Venice's TEE models, Lagoon sets up a full end-to-end encrypted session — your messages are encrypted before they leave your machine and decrypted only inside the secure enclave. Venice cannot see the content.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 11 -->
+  <div class="section" id="start">
+    <h2><span class="tag blue">11</span> Getting started</h2>
+
+    <div class="card blue-left">
+      <p>Requirements: <span class="bright">Python 3.10+</span>. No Node.js, no Docker, no Electron. One setup script handles everything.</p>
+    </div>
+
+    <ul class="rule-list">
+      <li><span class="rule-icon">1</span><div class="rule-body"><strong>Clone the repo.</strong></div></li>
+      <li><span class="rule-icon">2</span><div class="rule-body"><strong>Run <code style="font-family:monospace;color:var(--ansi-cyan);background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:3px;">python setup.py</code></strong> — creates a virtual environment, installs dependencies, walks you through API key setup. SSL certs optional (needed for mic access on mobile).</div></li>
+      <li><span class="rule-icon">3</span><div class="rule-body"><strong>Activate: <code style="font-family:monospace;color:var(--ansi-cyan);background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:3px;">source venv/bin/activate</code></strong></div></li>
+      <li><span class="rule-icon">4</span><div class="rule-body"><strong>Run: <code style="font-family:monospace;color:var(--ansi-cyan);background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:3px;">python app.py</code></strong></div></li>
+      <li><span class="rule-icon">5</span><div class="rule-body"><strong>Open <code style="font-family:monospace;color:var(--ansi-cyan);background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:3px;">https://localhost:5007</code></strong> — create your first character and start writing.</div></li>
+    </ul>
+
+    <div class="tip green">
+      <strong>First character setup:</strong> Start with a system prompt that describes who they are in their own voice, not what they should do. Add a world context block for setting details. Drop an Author's Note with your current tone requirements. You're writing within two messages.
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="card" style="margin-top: 40px; text-align: center; padding: 28px;">
+    <p class="dim" style="font-size: 0.8rem; letter-spacing: 0.05em;">LAGOON v1.3 · LOCAL-FIRST · BYOK · NO CLOUD</p>
+    <p style="margin-top: 8px; font-size: 0.85rem; color: var(--text-dim);">Built by a solo contractor who writes fiction and got tired of the context wall.<br>Every feature here exists because it was needed, not because it was impressive.</p>
+  </div>
+
+</div>
+</body>
+</html>
