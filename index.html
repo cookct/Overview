@@ -259,7 +259,6 @@
       <tr><td><code>enable_web_search</code></td><td>bool</td><td>Attaches web search results to the request. Results render as a collapsible citation block under the message.</td></tr>
       <tr><td><code>include_venice_system_prompt</code></td><td>bool</td><td>Prepends Venice's built-in system instruction. Default true. Disable for full custom control.</td></tr>
       <tr><td><code>uncensored_mode</code></td><td>bool</td><td>Routes to Venice uncensored variants. Explicitly requests uncensored output.</td></tr>
-      <tr><td><code>turbo_mode</code></td><td>bool</td><td>Uses Venice's fast backend system prompt. Overrides and ignores the custom system_prompt field.</td></tr>
       <tr><td><code>strip_thinking</code></td><td>bool</td><td>Hides <code>&lt;think&gt;…&lt;/think&gt;</code> CoT blocks from display. The model still thinks — CoT is stripped from the rendered bubble but remains in the saved message.</td></tr>
       <tr><td><code>style_overseer</code></td><td>bool</td><td>Enables the post-stream prose review agent for this character. See section 13.</td></tr>
       <tr><td><code>avatar_url</code></td><td>string</td><td>Data URI or path to the character's avatar image.</td></tr>
