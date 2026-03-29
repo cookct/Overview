@@ -193,7 +193,7 @@
 
     <div class="card accent-left">
       <p><span class="bright">Stack:</span> Flask (Python) backend on port 5007 · Vanilla JS frontend · Local JSON file storage · No database, no cloud sync, no accounts.</p>
-      <p><span class="bright">State:</span> Two parallel systems — <code>Store.js</code> (legacy event bus) and <code>state.js</code> (direct mutable object, primary). All active features read/write <code>state.js</code>.</p>
+      <p><span class="bright">State:</span> <code>state.js</code> — direct mutable object, single source of truth. All active features read/write it.</p>
       <p><span class="bright">Persistence:</span> Chats → <code>chats/{chat_id}.json</code> · Character configs → <code>configs/{name}.json</code> · Summary stacks → <code>.summaries/{chat_id}.summary.json</code> · Images/avatars → <code>images/</code>, <code>avatars/</code>, <code>model_avatars/</code> · UI preferences → <code>localStorage</code>.</p>
     </div>
 
