@@ -179,6 +179,8 @@
 
   <div class="toc">
     <div class="toc-title">Contents</div>
+    <div class="toc-group-label">Recent</div>
+    <a href="#whats-new"><span class="num">00</span> What's new in v1.3</a>
     <div class="toc-group-label">System</div>
     <a href="#overview"><span class="num">01</span> Architecture &amp; feature map</a>
     <a href="#chat"><span class="num">02</span> Chat &amp; character system</a>
@@ -197,6 +199,34 @@
     <a href="#memory-settings"><span class="num">12</span> Memory &amp; Context Settings</a>
     <a href="#providers"><span class="num">13</span> Providers &amp; Custom Endpoints</a>
     <a href="#setup"><span class="num">14</span> Quick setup guide</a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ 00 -->
+  <div class="section" id="whats-new">
+    <h2><span class="tag green">00</span> What's new in v1.3</h2>
+
+    <div class="card green-left">
+      <p>These changes landed after the initial public release. If you're coming from an earlier build, start here.</p>
+    </div>
+
+    <h3>Model SSOT — installed_models.json</h3>
+    <p>All model dropdowns (character config, overseer, summary, dual-model) now populate from a single file: <code>installed_models.json</code> in the project root. The old hardcoded HTML option list is gone. Add models through the UI; they appear in every dropdown immediately. The file is not tracked in version control — it's runtime state local to your installation.</p>
+    <p>Dropdowns group models by provider: <span class="cyan">Venice</span> · <span class="cyan">Together.ai</span> · <span class="cyan">Ollama</span> · <span class="cyan">Custom</span>.</p>
+    <p>Venice and Together users can browse and install additional models from the gear menu. Local-only users add models via Custom Endpoints (see §13).</p>
+
+    <h3>Custom Endpoints → auto-populate dropdowns</h3>
+    <p>When you save a custom endpoint (KoboldCpp, LM Studio, llama.cpp, etc.), its model is automatically added to <code>installed_models.json</code> and appears in all dropdowns with no extra steps. Deleting the endpoint removes it. Local-only users — no API key needed, full feature access.</p>
+
+    <h3>Provider inference</h3>
+    <p>The backend now infers which provider to route to by looking up the model ID in <code>installed_models.json</code>. You no longer need an explicit <code>provider</code> field in character configs — the routing follows the installed model's provider automatically.</p>
+
+    <h3>Author's Note — Apply vs send-time sync</h3>
+    <p><span class="bright">Apply button:</span> persists the note to the character config file on disk. Survives page reload and chat switching.<br>
+    <span class="bright">Typing + sending without Apply:</span> the note is read from the textarea at send time and used for that turn. Not persisted — resets on reload.<br>
+    Both paths correctly update the Prompt Monitor after the turn.</p>
+
+    <h3>Image generation removed</h3>
+    <p>The image generation panel, masking tools, and all related UI have been removed from v1.3. The feature existed in earlier builds. If you need it, it is preserved on the <code>main</code> branch.</p>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════ 01 -->
@@ -224,7 +254,11 @@
       </div>
       <div class="feature-tile">
         <div class="ft-name">Author's Note</div>
-        <div class="ft-desc">Re-injection of tone/voice/scene facts at a configurable depth from the bottom of context on every turn. Persistent (config file) or session-only override.</div>
+        <div class="ft-desc">Re-injection of tone/voice/scene facts at a configurable depth from the bottom of context on every turn. Apply saves to disk permanently; typing without Apply syncs at send time for the current session only.</div>
+      </div>
+      <div class="feature-tile">
+        <div class="ft-name">Model SSOT</div>
+        <div class="ft-desc">All dropdowns populate from <code>installed_models.json</code>. Add Venice, Together.ai, Ollama, or custom endpoint models through the UI. Grouped by provider. Custom endpoints auto-register their model on save.</div>
       </div>
       <div class="feature-tile">
         <div class="ft-name">Anchors</div>
@@ -287,8 +321,13 @@
     <p>User messages: clicking Edit loads the text back into the input field (highlighted to show edit mode) and sets <code>state.editingMessageIndex</code>. Submitting replaces that message in history instead of appending a new one.</p>
     <p>Assistant messages: opens the bubble for inline editing directly. The edited text is saved to <code>state.messages</code> and persisted to disk.</p>
 
-    <h3>Session Author's Note override</h3>
-    <p>In the Tools tab (right sidebar), the Author's Note field operates as a <span class="bright">session-only override</span>. It is stored in <code>state.sessionAuthorNote</code> and <code>state.sessionAuthorNoteDepth</code> — never written back to the character config file. Closing the chat discards it. To make changes permanent, edit the character config directly.</p>
+    <h3>Author's Note sidebar</h3>
+    <p>The Author's Note textarea in the right sidebar has two behaviours depending on how you interact with it:</p>
+    <ul class="body-list">
+      <li><span class="bright">Apply button</span> — writes the note to the character config file on disk. Persists across page reloads and chat switches.</li>
+      <li><span class="bright">Type and send (no Apply)</span> — the note is read from the textarea at the moment you send a message and used for that turn. Not written to disk; resets on reload.</li>
+    </ul>
+    <p>The Prompt Monitor updates correctly after each turn in both cases.</p>
 
     <h3>Avatar generation</h3>
     <p>Edit character config → Generate Avatar button. Takes the first 500 characters of <code>character_card</code> as the image description, prepends a strict photorealistic portrait prompt, calls Venice image generation with the safety checker disabled. Shows a preview — user keeps or regenerates. Stored as a base64 data URI in <code>avatar_url</code>.</p>
@@ -788,8 +827,9 @@ She still loves her mum. This is not weakness.</span></div>
       <p style="margin-top:10px;" class="dim">The model ID field is whatever you want sent in the <code>"model"</code> field of the API request. Most local servers ignore it or accept anything — check your tool's docs if you're unsure.</p>
     </div>
 
-    <h3>Model registry</h3>
-    <p>Built-in models are defined statically in <code>model_configs.json</code>. The registry does not auto-discover models at runtime — this is intentional, keeping the list clean and predictable. Ollama and Custom Endpoints are the dynamic layers for adding models without touching config files.</p>
+    <h3>Model registry (installed_models.json)</h3>
+    <p>Available models are stored in <code>installed_models.json</code> in the project root — the single source of truth for all dropdowns. The file is not tracked in version control and starts empty; you add models through the UI. Venice and Together.ai users can browse and install from the gear menu. Custom endpoint models are registered automatically on save. Ollama models sync via gear menu → Local (Ollama) → Sync.</p>
+    <p>The backend also reads <code>model_configs.json</code> for routing metadata (capabilities, context window sizes), but this file no longer drives the UI dropdown list.</p>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════ 14 -->
@@ -823,7 +863,7 @@ She still loves her mum. This is not weakness.</span></div>
 
     <hr>
     <div class="card accent-left">
-      <p class="dim" style="font-size:0.8rem;">Lagoon v1.3 · Updated March 2026 · All sections verified from source code. Memory &amp; Context Settings (§15) added.</p>
+      <p class="dim" style="font-size:0.8rem;">Lagoon v1.3 · Updated April 2026 · §00 added: model SSOT, custom endpoints, provider inference, author's note sync, image gen removal.</p>
     </div>
   </div>
 
